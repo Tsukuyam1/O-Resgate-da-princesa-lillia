@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mausritter: O Resgate da Princesa Ratinha (8-Bit RPG)</title>
+    <title>Mausritter: O Resgate da Princesa Lilla (8-Bit RPG)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     <style>
-        /* Pixel perfect styling & custom retro fonts */
         body {
             font-family: 'Press Start 2P', monospace;
             background-color: #08070d;
@@ -24,7 +23,6 @@
             font-family: 'VT323', monospace;
         }
 
-        /* 8-bit Pixel Borders */
         .pixel-box {
             border: 4px solid #ffffff;
             box-shadow: 
@@ -75,7 +73,12 @@
         }
         .pixel-btn-danger:hover { background-color: #ef4444; }
 
-        /* CRT Scanlines Screen Overlay */
+        .pixel-btn-success {
+            background-color: #059669;
+            box-shadow: inset -4px -4px 0px 0px #047857, inset 4px 4px 0px 0px #34d399;
+        }
+        .pixel-btn-success:hover { background-color: #10b981; }
+
         .crt-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -149,7 +152,7 @@
         <header class="w-full flex flex-wrap items-center justify-between gap-2 px-2 text-xs sm:text-sm">
             <div class="flex items-center gap-2">
                 <span class="inline-block w-3 h-3 bg-emerald-500 animate-pulse rounded-full"></span>
-                <h1 class="text-amber-400 font-bold tracking-wider text-xs sm:text-base">MAUSRITTER 8-BIT INTRO</h1>
+                <h1 class="text-amber-400 font-bold tracking-wider text-xs sm:text-base">MAUSRITTER: O RESGATE DA PRINCESA</h1>
             </div>
             
             <div class="flex items-center gap-2">
@@ -162,7 +165,7 @@
             </div>
         </header>
 
-        <!-- Canvas Pixel Scene Viewport (Com os ratinhos olhando para o castelo sem caixa de texto inicial) -->
+        <!-- Canvas Pixel Scene Viewport (Com Paisagem Rica, Nuvens, Raios e Monstros) -->
         <section class="w-full relative pixel-box overflow-hidden rounded-sm" style="height: 340px;">
             <canvas id="gameSceneCanvas" class="w-full h-full block"></canvas>
         </section>
@@ -179,8 +182,8 @@
                     <span class="text-[10px] text-slate-400 font-vt323 text-base">Mausritter Ruleset v1.0</span>
                 </div>
 
-                <!-- 5 Mouse Heroes Grid -->
-                <div class="grid grid-cols-5 gap-1.5 sm:gap-2" id="heroSelectorGrid">
+                <!-- 6 Mouse Heroes Grid -->
+                <div class="grid grid-cols-6 gap-1 sm:gap-2" id="heroSelectorGrid">
                     <!-- Dynamic rendering via JS -->
                 </div>
 
@@ -203,18 +206,18 @@
                             <span class="text-[10px] text-emerald-400">PRONTO</span>
                         </div>
                         <p class="font-vt323 text-lg leading-snug text-slate-300">
-                            Uma tempestade de sombras caiu sobre o Condado de Carvalho. O terrível Rei-Rato aprisionou a Princesa Lilla no topo da Torre do Abismo.
+                            Uma tempestade de sombras caiu sobre o Condado. O terrível Rei-Rato aprisionou a Princesa Lilla no castelo. Monstros espreitam nas matas!
                         </p>
                         
                         <div class="mt-3 p-2 bg-slate-900 border border-slate-700 rounded text-[11px] font-vt323 text-amber-200">
-                            🎯 <strong>Objetivo Principal:</strong> Infiltrar-se na Masmorra, derrotar as gárgulas e resgatar a princesa antes da meia-noite!
+                            🎯 <strong>Objetivo:</strong> Iniciar os testes de habilidade e invadir a masmorra!
                         </div>
                     </div>
 
                     <!-- Interactive Buttons -->
                     <div class="flex flex-col gap-2">
-                        <button onclick="startDungeonEncounter()" class="pixel-btn pixel-btn-danger w-full py-3 text-xs sm:text-sm font-bold tracking-wider">
-                            ⚔️ INICIAR EXPLORAÇÃO ⚔️
+                        <button onclick="openSkillCheckModal()" class="pixel-btn pixel-btn-danger w-full py-3 text-xs sm:text-sm font-bold tracking-wider">
+                            🎲 TESTE DE HABILIDADE 🎲
                         </button>
                     </div>
                 </div>
@@ -228,21 +231,32 @@
         </footer>
     </main>
 
-    <!-- Modal: Interactive Battle / Dungeon Intro Preview -->
+    <!-- Modal: Interactive Skill Check Mini-Game -->
     <div id="dungeonModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4">
         <div class="pixel-box-gold max-w-lg w-full p-6 text-center flex flex-col items-center gap-4 relative">
-            <h3 id="modalTitle" class="text-amber-400 text-sm sm:text-base font-bold">ADENTRANDO A MASMORRA!</h3>
+            <h3 id="modalTitle" class="text-amber-400 text-sm sm:text-base font-bold">DESAFIO DA MASMORRA</h3>
             
-            <div class="w-full h-32 bg-slate-950 border-2 border-slate-700 flex items-center justify-center relative overflow-hidden" id="modalCanvasContainer">
-                <canvas id="battleCanvas" class="w-full h-full"></canvas>
+            <div class="w-full p-4 bg-slate-950 border-2 border-slate-700 flex flex-col items-center gap-2">
+                <div id="skillCheckPrompt" class="font-vt323 text-xl text-amber-300">
+                    O grupo tenta escalar o muro sombrio do castelo...
+                </div>
+                <div id="diceRollResult" class="font-vt323 text-3xl text-white font-bold my-2">
+                    🎲 [ ? ]
+                </div>
+                <div id="skillCheckOutcome" class="font-vt323 text-lg text-slate-300 min-h-[40px]">
+                    Escolha um atributo do seu ratinho para testar a sorte!
+                </div>
             </div>
 
-            <p id="modalDescription" class="font-vt323 text-xl text-slate-200 leading-snug">
-                Os ratinhos acendem suas tochas e marcham em direção aos portões enferrujados do castelo... Preparem seus dados de d6!
-            </p>
+            <!-- Mini-Game Buttons -->
+            <div class="grid grid-cols-3 gap-2 w-full">
+                <button onclick="performSkillCheck('str')" class="pixel-btn px-2 py-2 text-[10px] bg-amber-600">FORÇA</button>
+                <button onclick="performSkillCheck('agi')" class="pixel-btn px-2 py-2 text-[10px] bg-emerald-600">AGILIDADE</button>
+                <button onclick="performSkillCheck('wil')" class="pixel-btn px-2 py-2 text-[10px] bg-indigo-600">VONTADE</button>
+            </div>
 
-            <button onclick="closeDungeonModal()" class="pixel-btn px-6 py-2 text-xs">
-                VOLTAR À TELA INICIAL
+            <button onclick="closeDungeonModal()" class="pixel-btn pixel-btn-success px-6 py-2 text-xs mt-2 w-full">
+                AVANÇAR PARA A MESA
             </button>
         </div>
     </div>
@@ -256,7 +270,7 @@
                 title: 'Guerreiro da Guarda Real',
                 hp: 6, maxHp: 6, str: 12, agi: 9, wil: 8,
                 weapon: 'Espada de Alfinete & Escudo de Queijo',
-                armor: 'Armadura de Tampinha de Garrafa (Proteção 1)',
+                armor: 'Armadura de Tampinha (Proteção 1)',
                 item: 'Rolo de Corda de Nylon (10m)',
                 color: '#ef4444', desc: 'Destemido e liderando na linha de frente.', spriteType: 'knight'
             },
@@ -296,9 +310,19 @@
                 title: 'Clériga do Carvalho',
                 hp: 6, maxHp: 6, str: 11, agi: 8, wil: 13,
                 weapon: 'Martelo de Prego Maciço',
-                armor: 'Cota de Malha de Anéis de Cadarço',
+                armor: 'Cota de Malha de Cadarço',
                 item: 'Bálsamo Curativo & Símbolo Sagrado',
                 color: '#3b82f6', desc: 'Devota protetora e curandeira do bando.', spriteType: 'cleric'
+            },
+            {
+                id: 'bard',
+                name: 'Finn, o Bardo',
+                title: 'Mestre das Canções',
+                hp: 4, maxHp: 4, str: 8, agi: 11, wil: 12,
+                weapon: 'Alaúde de Noz & Flauta de Osso',
+                armor: 'Capa Elegante de Retalhos',
+                item: 'Frasco de Mel & Livro de Poemas',
+                color: '#ec4899', desc: 'Inspira os companheiros com melodias antigas.', spriteType: 'bard'
             }
         ];
 
@@ -307,7 +331,6 @@
         let crtEnabled = true;
         const bgMusic = document.getElementById('bgMusic');
 
-        // Configuração do loop do Veridis Quo até 50 segundos
         bgMusic.addEventListener('timeupdate', () => {
             if (bgMusic.currentTime >= 50) {
                 bgMusic.currentTime = 0;
@@ -322,18 +345,11 @@
             
             if (audioEnabled) {
                 bgMusic.currentTime = 0;
-                bgMusic.play().catch(e => console.log("Autoplay bloqueado pelo browser:", e));
+                bgMusic.play().catch(e => console.log("Autoplay bloqueado:", e));
             } else {
                 bgMusic.pause();
             }
         }
-
-        // Tenta iniciar a música no primeiro clique na página (para burlar restrição de autoplay dos navegadores)
-        document.body.addEventListener('click', () => {
-            if (!audioEnabled && bgMusic.paused) {
-                // Mantém o estado visual desligado até que o usuário clique no botão de som, ou pode ligar direto se preferir.
-            }
-        }, { once: true });
 
         function toggleCRT() {
             crtEnabled = !crtEnabled;
@@ -349,7 +365,7 @@
             }
         }
 
-        /* Canvas 8-Bit Scene Rendering */
+        /* Canvas 8-Bit Scene Rendering with Clouds, Lightning & Monsters */
         const canvas = document.getElementById('gameSceneCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -359,18 +375,27 @@
             canvas.height = rect.height;
         }
 
-        let animFrameId;
         let starField = [];
+        let clouds = [];
         let lightningTimer = 0;
         let showLightning = false;
 
-        for (let i = 0; i < 40; i++) {
+        for (let i = 0; i < 35; i++) {
             starField.push({
                 x: Math.random(),
-                y: Math.random() * 0.45,
+                y: Math.random() * 0.4,
                 size: Math.random() > 0.8 ? 3 : 2,
                 blinkSpeed: 0.02 + Math.random() * 0.04,
                 alpha: Math.random()
+            });
+        }
+
+        for (let i = 0; i < 4; i++) {
+            clouds.push({
+                x: Math.random() * 500,
+                y: 30 + Math.random() * 60,
+                speed: 0.2 + Math.random() * 0.3,
+                width: 60 + Math.random() * 40
             });
         }
 
@@ -380,7 +405,6 @@
         }
 
         function drawPixelMouse(x, y, hero, isSelected, time) {
-            const scale = 2.5;
             const bounce = isSelected ? Math.sin(time * 8) * 3 : Math.sin(time * 3 + x) * 1;
             const baseY = y - bounce;
 
@@ -415,6 +439,8 @@
             } else if (hero.spriteType === 'cleric') {
                 drawPixelRect(x + 15, baseY + 4, 5, 5, '#94a3b8');
                 drawPixelRect(x + 17, baseY + 9, 2, 9, '#78350f');
+            } else if (hero.spriteType === 'bard') {
+                drawPixelRect(x + 15, baseY + 6, 6, 8, '#d97706'); // Lute
             }
         }
 
@@ -423,22 +449,24 @@
             const w = canvas.width;
             const h = canvas.height;
 
+            // Sky
             const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.6);
-            skyGrad.addColorStop(0, showLightning ? '#3b0764' : '#090514');
-            skyGrad.addColorStop(0.6, showLightning ? '#581c87' : '#1e1b4b');
+            skyGrad.addColorStop(0, showLightning ? '#4c1d95' : '#090514');
+            skyGrad.addColorStop(0.6, showLightning ? '#6d28d9' : '#1e1b4b');
             skyGrad.addColorStop(1, '#311b92');
             ctx.fillStyle = skyGrad;
             ctx.fillRect(0, 0, w, h);
 
             lightningTimer++;
-            if (lightningTimer > 250 && Math.random() > 0.96) {
+            if (lightningTimer > 220 && Math.random() > 0.95) {
                 showLightning = true;
-                if (lightningTimer > 256) {
+                if (lightningTimer > 230) {
                     showLightning = false;
                     lightningTimer = 0;
                 }
             }
 
+            // Stars
             starField.forEach(star => {
                 star.alpha += star.blinkSpeed;
                 if (star.alpha > 1 || star.alpha < 0.2) star.blinkSpeed = -star.blinkSpeed;
@@ -446,13 +474,24 @@
                 ctx.fillRect(star.x * w, star.y * h, star.size, star.size);
             });
 
+            // Clouds moving
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+            clouds.forEach(cloud => {
+                cloud.x += cloud.speed;
+                if (cloud.x > w + 50) cloud.x = -100;
+                ctx.fillRect(cloud.x, cloud.y, cloud.width, 14);
+                ctx.fillRect(cloud.x + 10, cloud.y - 6, cloud.width - 20, 8);
+            });
+
+            // Moon
             const moonX = w * 0.8;
             const moonY = h * 0.2;
             ctx.fillStyle = '#fef08a';
             ctx.beginPath();
-            ctx.arc(moonX, moonY, 20, 0, Math.PI * 2);
+            ctx.arc(moonX, moonY, 18, 0, Math.PI * 2);
             ctx.fill();
 
+            // Distant Castle & Monsters in shadows
             const castleX = w * 0.45;
             const castleBaseY = h * 0.6;
             ctx.fillStyle = '#0f172a';
@@ -460,23 +499,18 @@
             drawPixelRect(castleX - 30, castleBaseY - 40, 70, 40, '#020617');
             drawPixelRect(castleX - 35, castleBaseY - 70, 20, 70, '#020617');
             drawPixelRect(castleX + 15, castleBaseY - 95, 22, 95, '#090d16');
-            ctx.beginPath();
-            ctx.moveTo(castleX + 15, castleBaseY - 95);
-            ctx.lineTo(castleX + 26, castleBaseY - 115);
-            ctx.lineTo(castleX + 37, castleBaseY - 95);
-            ctx.closePath();
-            ctx.fillStyle = '#020617';
-            ctx.fill();
+            
+            // Monster bat/gargoyle peering from castle roof
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(castleX + 5, castleBaseY - 75, 4, 3); // Red eyes
+            ctx.fillRect(castleX + 13, castleBaseY - 75, 4, 3);
 
             const windowX = castleX + 22;
             const windowY = castleBaseY - 75;
             drawPixelRect(windowX, windowY, 8, 12, '#fef08a');
             drawPixelRect(windowX + 2, windowY + 2, 4, 4, '#f472b6');
-            if (Math.floor(time * 3) % 2 === 0) {
-                ctx.fillStyle = '#ef4444';
-                ctx.fillRect(windowX + 2, windowY - 6, 4, 4);
-            }
 
+            // Foreground Hill & Monster in the bushes
             ctx.fillStyle = '#1e293b';
             ctx.beginPath();
             ctx.moveTo(0, h);
@@ -488,12 +522,20 @@
             ctx.closePath();
             ctx.fill();
 
+            // Slime / Monster peeking in the bushes on the left
+            ctx.fillStyle = '#10b981';
+            ctx.fillRect(40, h * 0.65 - 12, 16, 12);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(44, h * 0.65 - 8, 3, 3);
+            ctx.fillRect(50, h * 0.65 - 8, 3, 3);
+
             ctx.strokeStyle = '#334155';
             ctx.lineWidth = 4;
             ctx.stroke();
 
-            const heroSpacing = Math.min(65, (w - 40) / 5);
-            const startX = (w - (heroSpacing * 4)) / 2 - 10;
+            // Draw 6 Mice on the Hill
+            const heroSpacing = Math.min(58, (w - 40) / 6);
+            const startX = (w - (heroSpacing * 5)) / 2 - 15;
             const mouseBaseY = h * 0.60;
 
             HEROES.forEach((hero, idx) => {
@@ -502,7 +544,7 @@
                 drawPixelMouse(posX, mouseBaseY, hero, isSelected, time);
             });
 
-            animFrameId = requestAnimationFrame(renderScene);
+            requestAnimationFrame(renderScene);
         }
 
         function renderHeroSelectorGrid() {
@@ -511,15 +553,15 @@
 
             HEROES.forEach((hero, idx) => {
                 const card = document.createElement('div');
-                card.className = `hero-card pixel-box p-2 text-center flex flex-col items-center justify-between ${idx === activeHeroIndex ? 'selected' : ''}`;
+                card.className = `hero-card pixel-box p-1.5 text-center flex flex-col items-center justify-between ${idx === activeHeroIndex ? 'selected' : ''}`;
                 card.onclick = () => selectHero(idx);
 
                 card.innerHTML = `
-                    <div class="w-full text-[9px] sm:text-[10px] truncate text-slate-300 font-bold mb-1">${hero.name.split(',')[0]}</div>
-                    <div class="w-8 h-8 rounded border-2 border-slate-700 flex items-center justify-center my-1" style="background-color: ${hero.color}22;">
-                        <span class="text-xs font-bold" style="color: ${hero.color};">${idx + 1}</span>
+                    <div class="w-full text-[8px] sm:text-[9px] truncate text-slate-300 font-bold mb-1">${hero.name.split(',')[0]}</div>
+                    <div class="w-6 h-6 rounded border border-slate-700 flex items-center justify-center my-0.5" style="background-color: ${hero.color}22;">
+                        <span class="text-[10px] font-bold" style="color: ${hero.color};">${idx + 1}</span>
                     </div>
-                    <div class="text-[9px] text-amber-400 font-bold">HP ${hero.hp}</div>
+                    <div class="text-[8px] text-amber-400 font-bold">HP ${hero.hp}</div>
                 `;
                 grid.appendChild(card);
             });
@@ -584,70 +626,37 @@
             `;
         }
 
-        let battleAnimId;
-
-        function startDungeonEncounter() {
-            const modal = document.getElementById('dungeonModal');
+        /* Skill Check Mini-Game Logic */
+        function openSkillCheckModal() {
             const hero = HEROES[activeHeroIndex];
-
-            document.getElementById('modalTitle').innerText = `EXPLORANDO COM ${hero.name.toUpperCase()}`;
-            document.getElementById('modalDescription').innerText = 
-                `${hero.name} avança na frente carregando ${hero.weapon}! A porta da masmorra se abre com um rangido ecoante...`;
-
-            modal.classList.remove('hidden');
-            initBattleCanvas();
+            document.getElementById('modalTitle').innerText = `TESTE DE HABILIDADE: ${hero.name.toUpperCase()}`;
+            document.getElementById('skillCheckPrompt').innerText = `${hero.name} lidera a ação e enfrenta um obstáculo no castelo!`;
+            document.getElementById('diceRollResult').innerText = `🎲 [ ? ]`;
+            document.getElementById('skillCheckOutcome').innerText = `Escolha um atributo (Força, Agilidade ou Vontade) para rolar o d20 (Precisa tirar igual ou menor que o atributo).`;
+            document.getElementById('dungeonModal').classList.remove('hidden');
         }
 
         function closeDungeonModal() {
             document.getElementById('dungeonModal').classList.add('hidden');
-            if (battleAnimId) cancelAnimationFrame(battleAnimId);
         }
 
-        function initBattleCanvas() {
-            const bCanvas = document.getElementById('battleCanvas');
-            const bCtx = bCanvas.getContext('2d');
-            bCanvas.width = bCanvas.parentElement.clientWidth;
-            bCanvas.height = bCanvas.parentElement.clientHeight;
+        function performSkillCheck(statKey) {
+            const hero = HEROES[activeHeroIndex];
+            const statValue = hero[statKey];
+            const roll = Math.floor(Math.random() * 20) + 1;
+            
+            document.getElementById('diceRollResult').innerText = `🎲 [ ${roll} ]`;
 
-            let mousePosX = 30;
-            let monsterPosX = bCanvas.width - 60;
-            let step = 0;
+            const statNames = { str: 'Força', agi: 'Agilidade', wil: 'Vontade' };
+            const isSuccess = roll <= statValue;
 
-            function drawBattleFrame() {
-                step += 0.05;
-                bCtx.fillStyle = '#020617';
-                bCtx.fillRect(0, 0, bCanvas.width, bCanvas.height);
-
-                bCtx.strokeStyle = '#1e293b';
-                bCtx.lineWidth = 1;
-                for (let x = 0; x < bCanvas.width; x += 20) {
-                    bCtx.beginPath(); bCtx.moveTo(x, 0); bCtx.lineTo(x, bCanvas.height); bCtx.stroke();
-                }
-
-                const hero = HEROES[activeHeroIndex];
-                const mouseY = bCanvas.height / 2 - 10 + Math.sin(step * 4) * 4;
-
-                bCtx.fillStyle = hero.color;
-                bCtx.fillRect(mousePosX, mouseY, 24, 24);
-                bCtx.fillStyle = '#ffffff';
-                bCtx.fillRect(mousePosX + 18, mouseY + 4, 4, 4);
-
-                const monsterY = bCanvas.height / 2 - 20 + Math.cos(step * 3) * 5;
-                bCtx.fillStyle = '#dc2626';
-                bCtx.fillRect(monsterPosX, monsterY, 36, 36);
-                bCtx.fillStyle = '#fef08a';
-                bCtx.fillRect(monsterPosX + 6, monsterY + 8, 6, 6);
-                bCtx.fillRect(monsterPosX + 22, monsterY + 8, 6, 6);
-
-                if (Math.floor(step) % 2 === 0) {
-                    bCtx.fillStyle = '#fbbf24';
-                    bCtx.fillRect((mousePosX + monsterPosX) / 2, bCanvas.height / 2, 12, 4);
-                }
-
-                battleAnimId = requestAnimationFrame(drawBattleFrame);
+            if (isSuccess) {
+                document.getElementById('skillCheckOutcome').innerHTML = 
+                    `<span class="text-emerald-400 font-bold">✨ SUCESSO! (${roll} <= ${statValue} em ${statNames[statKey]})</span><br>O ratinho superou o teste com maestria e ganhou vantagem na masmorra!`;
+            } else {
+                document.getElementById('skillCheckOutcome').innerHTML = 
+                    `<span class="text-rose-400 font-bold">💀 FALHA! (${roll} > ${statValue} em ${statNames[statKey]})</span><br>O teste falhou! Perigo iminente nos corredores escuros...`;
             }
-
-            drawBattleFrame();
         }
 
         window.onload = function() {
@@ -661,7 +670,7 @@
             });
 
             window.addEventListener('keydown', (e) => {
-                if (e.key >= '1' && e.key <= '5') {
+                if (e.key >= '1' && e.key <= '6') {
                     selectHero(parseInt(e.key) - 1);
                 }
             });
