@@ -142,7 +142,7 @@
     <!-- CRT Filter Layer -->
     <div id="crtOverlay" class="crt-overlay"></div>
 
-    <!-- Background Audio (Veridis Quo em loop até 50s) -->
+    <!-- Background Audio (Veridis Quo otimizado com loop em 50s) -->
     <audio id="bgMusic" src="veridis-quo.mp3" preload="auto"></audio>
 
     <!-- Main Game Container -->
@@ -165,7 +165,7 @@
             </div>
         </header>
 
-        <!-- Canvas Pixel Scene Viewport (Com Paisagem Rica, Nuvens, Raios e Monstros) -->
+        <!-- Canvas Pixel Scene (Árvores, Nuvens, Monstros Voadores e Ratinhos) -->
         <section class="w-full relative pixel-box overflow-hidden rounded-sm" style="height: 340px;">
             <canvas id="gameSceneCanvas" class="w-full h-full block"></canvas>
         </section>
@@ -206,18 +206,18 @@
                             <span class="text-[10px] text-emerald-400">PRONTO</span>
                         </div>
                         <p class="font-vt323 text-lg leading-snug text-slate-300">
-                            Uma tempestade de sombras caiu sobre o Condado. O terrível Rei-Rato aprisionou a Princesa Lilla no castelo. Monstros espreitam nas matas!
+                            Uma tempestade caiu sobre o Condado. Monstros voadores rondam as árvores e o Rei-Rato aguarda na masmorra!
                         </p>
                         
                         <div class="mt-3 p-2 bg-slate-900 border border-slate-700 rounded text-[11px] font-vt323 text-amber-200">
-                            🎯 <strong>Objetivo:</strong> Iniciar os testes de habilidade e invadir a masmorra!
+                            🎯 <strong>Desafio:</strong> Teste as habilidades do seu ratinho em combate contra as feras!
                         </div>
                     </div>
 
                     <!-- Interactive Buttons -->
                     <div class="flex flex-col gap-2">
                         <button onclick="openSkillCheckModal()" class="pixel-btn pixel-btn-danger w-full py-3 text-xs sm:text-sm font-bold tracking-wider">
-                            🎲 TESTE DE HABILIDADE 🎲
+                            ⚔️ ENFRENTAR MONSTRO ⚔️
                         </button>
                     </div>
                 </div>
@@ -231,99 +231,47 @@
         </footer>
     </main>
 
-    <!-- Modal: Interactive Skill Check Mini-Game -->
+    <!-- Modal: Interactive Combat Animation Mini-Game -->
     <div id="dungeonModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4">
         <div class="pixel-box-gold max-w-lg w-full p-6 text-center flex flex-col items-center gap-4 relative">
-            <h3 id="modalTitle" class="text-amber-400 text-sm sm:text-base font-bold">DESAFIO DA MASMORRA</h3>
+            <h3 id="modalTitle" class="text-amber-400 text-sm sm:text-base font-bold">COMBATE NA MASMORRA</h3>
             
-            <div class="w-full p-4 bg-slate-950 border-2 border-slate-700 flex flex-col items-center gap-2">
-                <div id="skillCheckPrompt" class="font-vt323 text-xl text-amber-300">
-                    O grupo tenta escalar o muro sombrio do castelo...
-                </div>
-                <div id="diceRollResult" class="font-vt323 text-3xl text-white font-bold my-2">
-                    🎲 [ ? ]
-                </div>
-                <div id="skillCheckOutcome" class="font-vt323 text-lg text-slate-300 min-h-[40px]">
-                    Escolha um atributo do seu ratinho para testar a sorte!
-                </div>
+            <div class="w-full h-36 bg-slate-950 border-2 border-slate-700 flex items-center justify-center relative overflow-hidden">
+                <canvas id="combatCanvas" class="w-full h-full"></canvas>
+            </div>
+
+            <div id="skillCheckPrompt" class="font-vt323 text-lg text-amber-300">
+                O monstro bloqueia o corredor! Escolha um atributo para atacar ou desviar:
+            </div>
+            <div id="diceRollResult" class="font-vt323 text-2xl text-white font-bold">
+                🎲 [ ? ]
+            </div>
+            <div id="skillCheckOutcome" class="font-vt323 text-base text-slate-300 min-h-[35px]">
+                Clique em Força, Agilidade ou Vontade para rolar o d20.
             </div>
 
             <!-- Mini-Game Buttons -->
             <div class="grid grid-cols-3 gap-2 w-full">
-                <button onclick="performSkillCheck('str')" class="pixel-btn px-2 py-2 text-[10px] bg-amber-600">FORÇA</button>
-                <button onclick="performSkillCheck('agi')" class="pixel-btn px-2 py-2 text-[10px] bg-emerald-600">AGILIDADE</button>
-                <button onclick="performSkillCheck('wil')" class="pixel-btn px-2 py-2 text-[10px] bg-indigo-600">VONTADE</button>
+                <button onclick="performCombatCheck('str')" class="pixel-btn px-2 py-2 text-[10px] bg-amber-600">FORÇA</button>
+                <button onclick="performCombatCheck('agi')" class="pixel-btn px-2 py-2 text-[10px] bg-emerald-600">AGILIDADE</button>
+                <button onclick="performCombatCheck('wil')" class="pixel-btn px-2 py-2 text-[10px] bg-indigo-600">VONTADE (MAGIA)</button>
             </div>
 
-            <button onclick="closeDungeonModal()" class="pixel-btn pixel-btn-success px-6 py-2 text-xs mt-2 w-full">
-                AVANÇAR PARA A MESA
+            <button onclick="closeDungeonModal()" class="pixel-btn pixel-btn-success px-6 py-2 text-xs w-full">
+                FECHAR / CONTINUAR JORNADA
             </button>
         </div>
     </div>
 
-    <!-- JavaScript Game Logic & Audio Loop Controller -->
+    <!-- JavaScript Game Logic & Animation Engine -->
     <script>
         const HEROES = [
-            {
-                id: 'knight',
-                name: 'Kael, o Valente',
-                title: 'Guerreiro da Guarda Real',
-                hp: 6, maxHp: 6, str: 12, agi: 9, wil: 8,
-                weapon: 'Espada de Alfinete & Escudo de Queijo',
-                armor: 'Armadura de Tampinha (Proteção 1)',
-                item: 'Rolo de Corda de Nylon (10m)',
-                color: '#ef4444', desc: 'Destemido e liderando na linha de frente.', spriteType: 'knight'
-            },
-            {
-                id: 'wizard',
-                name: 'Pip, o Arcano',
-                title: 'Mago dos Cogumelos',
-                hp: 4, maxHp: 4, str: 7, agi: 10, wil: 14,
-                weapon: 'Cajado de Glicínia & Esfera Luminescente',
-                armor: 'Túnica de Folha Seca',
-                item: 'Magia: Luz Solar & Feitiço da Faísca',
-                color: '#a855f7', desc: 'Mestre no uso de relíquias misteriosas.', spriteType: 'wizard'
-            },
-            {
-                id: 'rogue',
-                name: 'Sombra',
-                title: 'Gatuno das Sombras',
-                hp: 5, maxHp: 5, str: 8, agi: 14, wil: 9,
-                weapon: 'Adagas Duplas de Anzol',
-                armor: 'Manto de Couro de Besouro',
-                item: 'Ganchos de Escalada & Anestésico',
-                color: '#10b981', desc: 'Especialista em mover-se sem fazer ruído.', spriteType: 'rogue'
-            },
-            {
-                id: 'ranger',
-                name: 'Bramble',
-                title: 'Caçador da Floresta',
-                hp: 5, maxHp: 5, str: 10, agi: 12, wil: 10,
-                weapon: 'Arco de Garra de Passarinho',
-                armor: 'Colete de Casca de Noz',
-                item: 'Aljava com 12 Flechas de Espinho',
-                color: '#f59e0b', desc: 'Olhos de águia nas sombras.', spriteType: 'ranger'
-            },
-            {
-                id: 'cleric',
-                name: 'Madre Barnaby',
-                title: 'Clériga do Carvalho',
-                hp: 6, maxHp: 6, str: 11, agi: 8, wil: 13,
-                weapon: 'Martelo de Prego Maciço',
-                armor: 'Cota de Malha de Cadarço',
-                item: 'Bálsamo Curativo & Símbolo Sagrado',
-                color: '#3b82f6', desc: 'Devota protetora e curandeira do bando.', spriteType: 'cleric'
-            },
-            {
-                id: 'bard',
-                name: 'Finn, o Bardo',
-                title: 'Mestre das Canções',
-                hp: 4, maxHp: 4, str: 8, agi: 11, wil: 12,
-                weapon: 'Alaúde de Noz & Flauta de Osso',
-                armor: 'Capa Elegante de Retalhos',
-                item: 'Frasco de Mel & Livro de Poemas',
-                color: '#ec4899', desc: 'Inspira os companheiros com melodias antigas.', spriteType: 'bard'
-            }
+            { id: 'knight', name: 'Kael, o Valente', title: 'Guerreiro', hp: 6, maxHp: 6, str: 12, agi: 9, wil: 8, weapon: 'Espada de Alfinete', color: '#ef4444', spriteType: 'knight' },
+            { id: 'wizard', name: 'Pip, o Arcano', title: 'Mago', hp: 4, maxHp: 4, str: 7, agi: 10, wil: 14, weapon: 'Cajado Mágico', color: '#a855f7', spriteType: 'wizard' },
+            { id: 'rogue', name: 'Sombra', title: 'Gatuno', hp: 5, maxHp: 5, str: 8, agi: 14, wil: 9, weapon: 'Adagas Duplas', color: '#10b981', spriteType: 'rogue' },
+            { id: 'ranger', name: 'Bramble', title: 'Caçador', hp: 5, maxHp: 5, str: 10, agi: 12, wil: 10, weapon: 'Arco de Espinho', color: '#f59e0b', spriteType: 'ranger' },
+            { id: 'cleric', name: 'Madre Barnaby', title: 'Clériga', hp: 6, maxHp: 6, str: 11, agi: 8, wil: 13, weapon: 'Martelo de Prego', color: '#3b82f6', spriteType: 'cleric' },
+            { id: 'bard', name: 'Finn, o Bardo', title: 'Bardo', hp: 4, maxHp: 4, str: 8, agi: 11, wil: 12, weapon: 'Alaúde de Noz', color: '#ec4899', spriteType: 'bard' }
         ];
 
         let activeHeroIndex = 0;
@@ -331,10 +279,11 @@
         let crtEnabled = true;
         const bgMusic = document.getElementById('bgMusic');
 
+        // Loop rigoroso até 50 segundos para o Veridis Quo
         bgMusic.addEventListener('timeupdate', () => {
             if (bgMusic.currentTime >= 50) {
                 bgMusic.currentTime = 0;
-                bgMusic.play();
+                bgMusic.play().catch(() => {});
             }
         });
 
@@ -345,7 +294,7 @@
             
             if (audioEnabled) {
                 bgMusic.currentTime = 0;
-                bgMusic.play().catch(e => console.log("Autoplay bloqueado:", e));
+                bgMusic.play().catch(e => console.log("Autoplay bloqueado pelo navegador:", e));
             } else {
                 bgMusic.pause();
             }
@@ -365,7 +314,7 @@
             }
         }
 
-        /* Canvas 8-Bit Scene Rendering with Clouds, Lightning & Monsters */
+        /* Canvas Principal (Paisagem com Árvores, Nuvens, Monstros Voadores e Ratinhos) */
         const canvas = document.getElementById('gameSceneCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -377,26 +326,19 @@
 
         let starField = [];
         let clouds = [];
+        let bats = [];
         let lightningTimer = 0;
         let showLightning = false;
 
-        for (let i = 0; i < 35; i++) {
-            starField.push({
-                x: Math.random(),
-                y: Math.random() * 0.4,
-                size: Math.random() > 0.8 ? 3 : 2,
-                blinkSpeed: 0.02 + Math.random() * 0.04,
-                alpha: Math.random()
-            });
+        for (let i = 0; i < 30; i++) {
+            starField.push({ x: Math.random(), y: Math.random() * 0.4, size: Math.random() > 0.8 ? 3 : 2, alpha: Math.random() });
         }
-
-        for (let i = 0; i < 4; i++) {
-            clouds.push({
-                x: Math.random() * 500,
-                y: 30 + Math.random() * 60,
-                speed: 0.2 + Math.random() * 0.3,
-                width: 60 + Math.random() * 40
-            });
+        for (let i = 0; i < 3; i++) {
+            clouds.push({ x: Math.random() * 500, y: 20 + Math.random() * 50, speed: 0.15 + Math.random() * 0.2, width: 70 });
+        }
+        // Monstros voadores (morcegos/gárgulas) na paisagem
+        for (let i = 0; i < 3; i++) {
+            bats.push({ x: 100 + i * 150, y: 80 + Math.random() * 60, speed: 1 + Math.random(), wingState: 0 });
         }
 
         function drawPixelRect(x, y, w, h, color) {
@@ -404,243 +346,249 @@
             ctx.fillRect(Math.floor(x), Math.floor(y), Math.floor(w), Math.floor(h));
         }
 
-        function drawPixelMouse(x, y, hero, isSelected, time) {
-            const bounce = isSelected ? Math.sin(time * 8) * 3 : Math.sin(time * 3 + x) * 1;
-            const baseY = y - bounce;
-
-            if (isSelected) {
-                ctx.fillStyle = '#fbbf24';
-                ctx.beginPath();
-                ctx.arc(x + 10, baseY + 18, 14, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            drawPixelRect(x + 4, baseY + 8, 12, 14, '#64748b');
-            drawPixelRect(x + 2, baseY + 4, 16, 8, '#94a3b8');
-            drawPixelRect(x + 1, baseY + 1, 5, 5, '#f472b6');
-            drawPixelRect(x + 14, baseY + 1, 5, 5, '#f472b6');
-            drawPixelRect(x + 8, baseY + 8, 4, 3, '#f43f5e');
-            drawPixelRect(x + 4, baseY + 5, 2, 2, '#000000');
-            drawPixelRect(x + 14, baseY + 5, 2, 2, '#000000');
-            drawPixelRect(x - 4, baseY + 18, 8, 2, '#f472b6');
-            drawPixelRect(x + 4, baseY + 12, 12, 6, hero.color);
-
-            if (hero.spriteType === 'knight') {
-                drawPixelRect(x + 16, baseY + 4, 2, 12, '#e2e8f0');
-                drawPixelRect(x + 14, baseY + 12, 6, 2, '#fbbf24');
-            } else if (hero.spriteType === 'wizard') {
-                drawPixelRect(x + 16, baseY, 2, 18, '#78350f');
-                drawPixelRect(x + 15, baseY - 3, 4, 4, '#c084fc');
-            } else if (hero.spriteType === 'rogue') {
-                drawPixelRect(x - 2, baseY + 8, 3, 6, '#cbd5e1');
-                drawPixelRect(x + 17, baseY + 8, 3, 6, '#cbd5e1');
-            } else if (hero.spriteType === 'ranger') {
-                drawPixelRect(x + 16, baseY + 2, 2, 14, '#b45309');
-            } else if (hero.spriteType === 'cleric') {
-                drawPixelRect(x + 15, baseY + 4, 5, 5, '#94a3b8');
-                drawPixelRect(x + 17, baseY + 9, 2, 9, '#78350f');
-            } else if (hero.spriteType === 'bard') {
-                drawPixelRect(x + 15, baseY + 6, 6, 8, '#d97706'); // Lute
-            }
-        }
-
         function renderScene(timestamp) {
             const time = timestamp * 0.001;
             const w = canvas.width;
             const h = canvas.height;
 
-            // Sky
+            // Céu
             const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.6);
             skyGrad.addColorStop(0, showLightning ? '#4c1d95' : '#090514');
-            skyGrad.addColorStop(0.6, showLightning ? '#6d28d9' : '#1e1b4b');
             skyGrad.addColorStop(1, '#311b92');
             ctx.fillStyle = skyGrad;
             ctx.fillRect(0, 0, w, h);
 
             lightningTimer++;
-            if (lightningTimer > 220 && Math.random() > 0.95) {
+            if (lightningTimer > 240 && Math.random() > 0.96) {
                 showLightning = true;
-                if (lightningTimer > 230) {
-                    showLightning = false;
-                    lightningTimer = 0;
-                }
+                if (lightningTimer > 250) { showLightning = false; lightningTimer = 0; }
             }
 
-            // Stars
-            starField.forEach(star => {
-                star.alpha += star.blinkSpeed;
-                if (star.alpha > 1 || star.alpha < 0.2) star.blinkSpeed = -star.blinkSpeed;
-                ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(star.alpha)})`;
-                ctx.fillRect(star.x * w, star.y * h, star.size, star.size);
+            // Estrelas e Nuvens
+            starField.forEach(s => {
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(Math.sin(time + s.x))})`;
+                ctx.fillRect(s.x * w, s.y * h, s.size, s.size);
             });
 
-            // Clouds moving
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-            clouds.forEach(cloud => {
-                cloud.x += cloud.speed;
-                if (cloud.x > w + 50) cloud.x = -100;
-                ctx.fillRect(cloud.x, cloud.y, cloud.width, 14);
-                ctx.fillRect(cloud.x + 10, cloud.y - 6, cloud.width - 20, 8);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+            clouds.forEach(c => {
+                c.x += c.speed;
+                if (c.x > w + 50) c.x = -80;
+                ctx.fillRect(c.x, c.y, c.width, 12);
             });
 
-            // Moon
-            const moonX = w * 0.8;
-            const moonY = h * 0.2;
-            ctx.fillStyle = '#fef08a';
-            ctx.beginPath();
-            ctx.arc(moonX, moonY, 18, 0, Math.PI * 2);
-            ctx.fill();
+            // Monstros Voadores (Morcegos/Gárgulas mexendo as asas)
+            bats.forEach(b => {
+                b.x += Math.sin(time * 3) * 0.8;
+                b.y += Math.cos(time * 2) * 0.3;
+                ctx.fillStyle = '#ef4444'; // Olhos vermelhos
+                ctx.fillRect(b.x, b.y, 2, 2);
+                ctx.fillRect(b.x + 6, b.y, 2, 2);
+                ctx.fillStyle = '#64748b'; // Corpo
+                ctx.fillRect(b.x + 2, b.y, 4, 3);
+                // Asas animadas
+                if (Math.floor(time * 8) % 2 === 0) {
+                    ctx.fillRect(b.x - 3, b.y - 2, 3, 2);
+                    ctx.fillRect(b.x + 8, b.y - 2, 3, 2);
+                } else {
+                    ctx.fillRect(b.x - 3, b.y + 2, 3, 2);
+                    ctx.fillRect(b.x + 8, b.y + 2, 3, 2);
+                }
+            });
 
-            // Distant Castle & Monsters in shadows
-            const castleX = w * 0.45;
+            // Castelo ao fundo
+            const castleX = w * 0.5;
             const castleBaseY = h * 0.6;
             ctx.fillStyle = '#0f172a';
+            drawPixelRect(castleX - 25, castleBaseY - 50, 50, 50, '#020617');
+            drawPixelRect(castleX - 10, castleBaseY - 80, 20, 30, '#090d16');
+            ctx.fillStyle = '#fef08a'; // Janela da princesa
+            drawPixelRect(castleX - 3, castleBaseY - 70, 6, 10, '#fef08a');
 
-            drawPixelRect(castleX - 30, castleBaseY - 40, 70, 40, '#020617');
-            drawPixelRect(castleX - 35, castleBaseY - 70, 20, 70, '#020617');
-            drawPixelRect(castleX + 15, castleBaseY - 95, 22, 95, '#090d16');
-            
-            // Monster bat/gargoyle peering from castle roof
-            ctx.fillStyle = '#ef4444';
-            ctx.fillRect(castleX + 5, castleBaseY - 75, 4, 3); // Red eyes
-            ctx.fillRect(castleX + 13, castleBaseY - 75, 4, 3);
-
-            const windowX = castleX + 22;
-            const windowY = castleBaseY - 75;
-            drawPixelRect(windowX, windowY, 8, 12, '#fef08a');
-            drawPixelRect(windowX + 2, windowY + 2, 4, 4, '#f472b6');
-
-            // Foreground Hill & Monster in the bushes
+            // Colina principal
             ctx.fillStyle = '#1e293b';
             ctx.beginPath();
             ctx.moveTo(0, h);
             ctx.lineTo(0, h * 0.65);
-            ctx.lineTo(w * 0.35, h * 0.58);
-            ctx.lineTo(w * 0.7, h * 0.62);
-            ctx.lineTo(w, h * 0.7);
+            ctx.lineTo(w, h * 0.65);
             ctx.lineTo(w, h);
             ctx.closePath();
             ctx.fill();
 
-            // Slime / Monster peeking in the bushes on the left
-            ctx.fillStyle = '#10b981';
-            ctx.fillRect(40, h * 0.65 - 12, 16, 12);
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(44, h * 0.65 - 8, 3, 3);
-            ctx.fillRect(50, h * 0.65 - 8, 3, 3);
+            // Árvores em primeiro plano (silhuetas nas laterais dando profundidade)
+            ctx.fillStyle = '#090d16';
+            // Árvore esquerda
+            drawPixelRect(15, h * 0.4, 18, h * 0.35, '#090d16');
+            drawPixelRect(5, h * 0.35, 38, 30, '#111827');
+            drawPixelRect(10, h * 0.28, 28, 25, '#111827');
+            // Árvore direita
+            drawPixelRect(w - 35, h * 0.42, 18, h * 0.33, '#090d16');
+            drawPixelRect(w - 45, h * 0.37, 38, 28, '#111827');
 
-            ctx.strokeStyle = '#334155';
-            ctx.lineWidth = 4;
-            ctx.stroke();
-
-            // Draw 6 Mice on the Hill
-            const heroSpacing = Math.min(58, (w - 40) / 6);
-            const startX = (w - (heroSpacing * 5)) / 2 - 15;
-            const mouseBaseY = h * 0.60;
+            // Ratinhos na colina
+            const heroSpacing = Math.min(55, (w - 80) / 6);
+            const startX = (w - (heroSpacing * 5)) / 2 - 10;
+            const mouseBaseY = h * 0.62;
 
             HEROES.forEach((hero, idx) => {
                 const posX = startX + (idx * heroSpacing);
                 const isSelected = (idx === activeHeroIndex);
-                drawPixelMouse(posX, mouseBaseY, hero, isSelected, time);
+                const bounce = isSelected ? Math.sin(time * 8) * 3 : 0;
+                const baseY = mouseBaseY - bounce;
+
+                if (isSelected) {
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.beginPath();
+                    ctx.arc(posX + 10, baseY + 14, 12, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Desenho pixel do ratinho
+                drawPixelRect(posX + 4, baseY + 8, 12, 12, '#64748b');
+                drawPixelRect(posX + 2, baseY + 4, 14, 6, '#94a3b8');
+                drawPixelRect(posX + 1, baseY + 1, 4, 4, '#f472b6');
+                drawPixelRect(posX + 13, baseY + 1, 4, 4, '#f472b6');
+                drawPixelRect(posX + 4, baseY + 10, 12, 6, hero.color);
             });
 
             requestAnimationFrame(renderScene);
         }
 
+        /* Seleção de Heróis UI */
         function renderHeroSelectorGrid() {
             const grid = document.getElementById('heroSelectorGrid');
             grid.innerHTML = '';
-
             HEROES.forEach((hero, idx) => {
                 const card = document.createElement('div');
-                card.className = `hero-card pixel-box p-1.5 text-center flex flex-col items-center justify-between ${idx === activeHeroIndex ? 'selected' : ''}`;
-                card.onclick = () => selectHero(idx);
-
+                card.className = `hero-card pixel-box p-1 text-center flex flex-col items-center justify-between ${idx === activeHeroIndex ? 'selected' : ''}`;
+                card.onclick = () => { activeHeroIndex = idx; renderHeroSelectorGrid(); renderHeroDetails(); };
                 card.innerHTML = `
-                    <div class="w-full text-[8px] sm:text-[9px] truncate text-slate-300 font-bold mb-1">${hero.name.split(',')[0]}</div>
-                    <div class="w-6 h-6 rounded border border-slate-700 flex items-center justify-center my-0.5" style="background-color: ${hero.color}22;">
-                        <span class="text-[10px] font-bold" style="color: ${hero.color};">${idx + 1}</span>
+                    <div class="text-[8px] truncate text-slate-300 font-bold">${hero.name.split(',')[0]}</div>
+                    <div class="w-5 h-5 rounded border border-slate-700 flex items-center justify-center my-0.5" style="background-color: ${hero.color}33;">
+                        <span class="text-[9px] font-bold" style="color: ${hero.color};">${idx + 1}</span>
                     </div>
-                    <div class="text-[8px] text-amber-400 font-bold">HP ${hero.hp}</div>
+                    <div class="text-[8px] text-amber-400">HP ${hero.hp}</div>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        function selectHero(index) {
-            activeHeroIndex = index;
-            renderHeroSelectorGrid();
-            renderHeroDetails();
-        }
-
         function renderHeroDetails() {
             const hero = HEROES[activeHeroIndex];
-            const panel = document.getElementById('heroDetailPanel');
-
-            panel.innerHTML = `
+            document.getElementById('heroDetailPanel').innerHTML = `
                 <div class="flex flex-col items-center gap-2 w-full md:w-32 bg-slate-950/70 p-3 rounded border border-indigo-900/60">
                     <div class="w-16 h-16 rounded-full border-4 flex items-center justify-center shadow-inner" style="border-color: ${hero.color}; background-color: ${hero.color}33">
                         <span class="text-2xl">🐭</span>
                     </div>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded text-slate-900 uppercase" style="background-color: ${hero.color}">
-                        ${hero.spriteType}
-                    </span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded text-slate-900 uppercase" style="background-color: ${hero.color}">${hero.spriteType}</span>
                 </div>
-
                 <div class="flex-1 w-full">
-                    <div class="flex flex-wrap items-center justify-between border-b border-amber-500/40 pb-2 mb-2">
+                    <div class="flex justify-between border-b border-amber-500/40 pb-2 mb-2">
                         <div>
-                            <h3 class="text-sm sm:text-base font-bold text-amber-300">${hero.name}</h3>
+                            <h3 class="text-sm font-bold text-amber-300">${hero.name}</h3>
                             <p class="text-[11px] text-slate-400 font-vt323 text-lg">${hero.title}</p>
                         </div>
-                        <div class="flex items-center gap-2 bg-slate-900 px-3 py-1 border border-slate-700 rounded">
-                            <span class="text-xs text-rose-400 font-bold">❤️ HP: ${hero.hp}/${hero.maxHp}</span>
-                        </div>
+                        <span class="text-xs text-rose-400 font-bold">❤️ HP: ${hero.hp}/${hero.maxHp}</span>
                     </div>
-
-                    <div class="grid grid-cols-3 gap-2 mb-3 text-center">
-                        <div class="bg-slate-900/80 p-1.5 border border-slate-700 rounded">
-                            <div class="text-[9px] text-slate-400">FORÇA</div>
-                            <div class="text-sm font-bold text-amber-400 font-vt323 text-xl">${hero.str}</div>
-                        </div>
-                        <div class="bg-slate-900/80 p-1.5 border border-slate-700 rounded">
-                            <div class="text-[9px] text-slate-400">AGILIDADE</div>
-                            <div class="text-sm font-bold text-emerald-400 font-vt323 text-xl">${hero.agi}</div>
-                        </div>
-                        <div class="bg-slate-900/80 p-1.5 border border-slate-700 rounded">
-                            <div class="text-[9px] text-slate-400">VONTADE</div>
-                            <div class="text-sm font-bold text-indigo-400 font-vt323 text-xl">${hero.wil}</div>
-                        </div>
+                    <div class="grid grid-cols-3 gap-2 mb-2 text-center">
+                        <div class="bg-slate-900 p-1 border border-slate-700 rounded"><div class="text-[8px] text-slate-400">FOR</div><div class="text-lg font-bold text-amber-400 font-vt323">${hero.str}</div></div>
+                        <div class="bg-slate-900 p-1 border border-slate-700 rounded"><div class="text-[8px] text-slate-400">AGI</div><div class="text-lg font-bold text-emerald-400 font-vt323">${hero.agi}</div></div>
+                        <div class="bg-slate-900 p-1 border border-slate-700 rounded"><div class="text-[8px] text-slate-400">VON</div><div class="text-lg font-bold text-indigo-400 font-vt323">${hero.wil}</div></div>
                     </div>
-
-                    <div class="text-[11px] font-vt323 text-lg space-y-1 text-slate-300 bg-slate-950/40 p-2 rounded border border-slate-800">
+                    <div class="text-[11px] font-vt323 text-lg text-slate-300 bg-slate-950/40 p-2 rounded border border-slate-800">
                         <div>⚔️ <strong>Arma:</strong> ${hero.weapon}</div>
-                        <div>🛡️ <strong>Proteção:</strong> ${hero.armor}</div>
-                        <div>🎒 <strong>Item Principal:</strong> ${hero.item}</div>
                     </div>
-
-                    <p class="mt-2 text-xs font-vt323 text-lg text-slate-400 leading-snug">
-                        ${hero.desc}
-                    </p>
                 </div>
             `;
         }
 
-        /* Skill Check Mini-Game Logic */
+        /* Mini-Game de Combate com Animação Visual */
+        let combatAnimId;
+        let combatState = 'idle'; // idle, attacking, defeated, dead
+
         function openSkillCheckModal() {
+            combatState = 'idle';
             const hero = HEROES[activeHeroIndex];
-            document.getElementById('modalTitle').innerText = `TESTE DE HABILIDADE: ${hero.name.toUpperCase()}`;
-            document.getElementById('skillCheckPrompt').innerText = `${hero.name} lidera a ação e enfrenta um obstáculo no castelo!`;
+            document.getElementById('modalTitle').innerText = `COMBATE: ${hero.name.toUpperCase()}`;
+            document.getElementById('skillCheckPrompt').innerText = `Um monstro feroz surge na masmorra! Escolha seu atributo para reagir:`;
             document.getElementById('diceRollResult').innerText = `🎲 [ ? ]`;
-            document.getElementById('skillCheckOutcome').innerText = `Escolha um atributo (Força, Agilidade ou Vontade) para rolar o d20 (Precisa tirar igual ou menor que o atributo).`;
+            document.getElementById('skillCheckOutcome').innerText = `Tire igual ou menor que o atributo para vencer o monstro!`;
             document.getElementById('dungeonModal').classList.remove('hidden');
+            initCombatCanvas();
         }
 
         function closeDungeonModal() {
             document.getElementById('dungeonModal').classList.add('hidden');
+            if (combatAnimId) cancelAnimationFrame(combatAnimId);
         }
 
-        function performSkillCheck(statKey) {
+        function initCombatCanvas() {
+            const cCanvas = document.getElementById('combatCanvas');
+            const cCtx = cCanvas.getContext('2d');
+            cCanvas.width = cCanvas.parentElement.clientWidth;
+            cCanvas.height = cCanvas.parentElement.clientHeight;
+
+            let step = 0;
+
+            function drawCombatFrame() {
+                step += 0.05;
+                cCtx.fillStyle = '#020617';
+                cCtx.fillRect(0, 0, cCanvas.width, cCanvas.height);
+
+                const hero = HEROES[activeHeroIndex];
+                let mouseX = 60;
+                let mouseY = cCanvas.height / 2 - 10;
+                let monsterX = cCanvas.width - 90;
+                let monsterY = cCanvas.height / 2 - 20;
+
+                // Animações conforme o resultado do teste
+                if (combatState === 'success') {
+                    // Ratinho avança e bate / monstro some ou pisca
+                    mouseX += Math.sin(step * 10) * 15;
+                } else if (combatState === 'fail') {
+                    // Ratinho é jogado para trás e fica com X nos olhos
+                    mouseX -= 20;
+                    mouseY += 10;
+                }
+
+                // Desenho do Ratinho em combate
+                cCtx.fillStyle = hero.color;
+                cCtx.fillRect(mouseX, mouseY, 20, 20);
+                
+                if (combatState === 'fail') {
+                    // X nos olhos ao falhar
+                    cCtx.fillStyle = '#ffffff';
+                    cCtx.fillRect(mouseX + 12, mouseY + 4, 4, 4);
+                    cCtx.fillStyle = '#000000';
+                    cCtx.font = '10px monospace';
+                    cCtx.fillText('X X', mouseX + 4, mouseY + 10);
+                } else {
+                    cCtx.fillStyle = '#ffffff';
+                    cCtx.fillRect(mouseX + 14, mouseY + 6, 3, 3);
+                    // Arma / Magia atacando
+                    cCtx.fillStyle = '#fbbf24';
+                    cCtx.fillRect(mouseX + 20, mouseY + 8, 14, 4);
+                }
+
+                // Desenho do Monstro (se não foi derrotado)
+                if (combatState !== 'success') {
+                    cCtx.fillStyle = '#dc2626';
+                    cCtx.fillRect(monsterX, monsterY, 36, 36);
+                    cCtx.fillStyle = '#fef08a';
+                    cCtx.fillRect(monsterX + 6, monsterY + 8, 6, 6);
+                    cCtx.fillRect(monsterX + 22, monsterY + 8, 6, 6);
+                } else {
+                    // Monstro derrotado (fumacinha ou desaparecendo)
+                    cCtx.fillStyle = '#475569';
+                    cCtx.fillRect(monsterX + 5, monsterY + 10, 26, 16);
+                }
+
+                combatAnimId = requestAnimationFrame(drawCombatFrame);
+            }
+            drawCombatFrame();
+        }
+
+        function performCombatCheck(statKey) {
             const hero = HEROES[activeHeroIndex];
             const statValue = hero[statKey];
             const roll = Math.floor(Math.random() * 20) + 1;
@@ -648,14 +596,15 @@
             document.getElementById('diceRollResult').innerText = `🎲 [ ${roll} ]`;
 
             const statNames = { str: 'Força', agi: 'Agilidade', wil: 'Vontade' };
-            const isSuccess = roll <= statValue;
 
-            if (isSuccess) {
+            if (roll <= statValue) {
+                combatState = 'success';
                 document.getElementById('skillCheckOutcome').innerHTML = 
-                    `<span class="text-emerald-400 font-bold">✨ SUCESSO! (${roll} <= ${statValue} em ${statNames[statKey]})</span><br>O ratinho superou o teste com maestria e ganhou vantagem na masmorra!`;
+                    `<span class="text-emerald-400 font-bold">✨ SUCESSO! (${roll} <= ${statValue} em ${statNames[statKey]})</span><br>${hero.name} acertou em cheio e o monstro foi derrotado!`;
             } else {
+                combatState = 'fail';
                 document.getElementById('skillCheckOutcome').innerHTML = 
-                    `<span class="text-rose-400 font-bold">💀 FALHA! (${roll} > ${statValue} em ${statNames[statKey]})</span><br>O teste falhou! Perigo iminente nos corredores escuros...`;
+                    `<span class="text-rose-400 font-bold">💀 FALHA! (${roll} > ${statValue} em ${statNames[statKey]})</span><br>${hero.name} tropeçou e caiu para trás derrotado!`;
             }
         }
 
@@ -665,13 +614,12 @@
             renderHeroDetails();
             requestAnimationFrame(renderScene);
 
-            window.addEventListener('resize', () => {
-                resizeCanvas();
-            });
-
+            window.addEventListener('resize', () => resizeCanvas());
             window.addEventListener('keydown', (e) => {
                 if (e.key >= '1' && e.key <= '6') {
-                    selectHero(parseInt(e.key) - 1);
+                    activeHeroIndex = parseInt(e.key) - 1;
+                    renderHeroSelectorGrid();
+                    renderHeroDetails();
                 }
             });
         };
