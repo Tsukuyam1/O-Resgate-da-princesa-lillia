@@ -80,30 +80,19 @@
       border: 4px solid var(--border-color);
       padding: 12px 16px;
       box-shadow: 0 4px 0 #000;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
-    .retro-btn {
-      background: #21262d;
-      color: var(--accent-gold);
-      border: 2px solid var(--accent-gold);
-      padding: 8px 12px;
-      font-family: var(--retro-font);
-      font-size: 10px;
-      cursor: pointer;
-      transition: all 0.1s ease;
-      box-shadow: 2px 2px 0 #000;
+    .audio-player-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .retro-btn:hover {
-      background: var(--accent-gold);
-      color: #000;
-      transform: translate(-1px, -1px);
-      box-shadow: 3px 3px 0 #000;
-    }
-
-    .retro-btn:active {
-      transform: translate(1px, 1px);
-      box-shadow: 1px 1px 0 #000;
+    audio {
+      height: 32px;
+      filter: invert(90%) hue-rotate(180deg);
     }
 
     /* 8-Bit Canvas Scene */
@@ -129,7 +118,6 @@
       border: 4px dashed var(--accent-gold);
       padding: 20px;
       box-shadow: 0 4px 0 #000;
-      position: relative;
     }
 
     .story-title {
@@ -150,19 +138,12 @@
       margin-bottom: 10px;
     }
 
-    .story-text p:last-child {
-      margin-bottom: 0;
-    }
-
     /* Character Roster */
     .roster-title {
       font-size: 12px;
       color: var(--primary-green);
       margin-top: 10px;
       text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 10px;
     }
 
     .hero-grid {
@@ -204,7 +185,6 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      image-rendering: pixelated;
     }
 
     .hero-name {
@@ -268,7 +248,40 @@
       100% { transform: scale(1.03); }
     }
 
-    /* Footer */
+    /* Modal / Encounter Screen */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border: 4px solid var(--accent-gold);
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 8px 0 #000;
+    }
+
+    .modal-title {
+      font-size: 14px;
+      color: var(--accent-gold);
+      margin-bottom: 15px;
+    }
+
+    .modal-text {
+      font-size: 9px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      color: var(--text-main);
+    }
+
     footer {
       margin-top: 20px;
       font-size: 8px;
@@ -282,10 +295,16 @@
   <div class="crt-overlay"></div>
 
   <div class="container">
-    <!-- Top Bar with Music Toggle -->
+    <!-- Top Bar with Audio Controls -->
     <div class="top-bar">
-      <div style="font-size: 10px; color: var(--accent-gold);">MAUSRITTER RPG</div>
-      <button class="retro-btn" id="audioToggle">🔊 MÚSICA [ON/OFF]</button>
+      <div style="font-size: 10px; color: var(--accent-gold);">⚔️ MAUSRITTER: O RESGATE</div>
+      <div class="audio-player-wrapper">
+        <span style="font-size: 8px; color: var(--text-muted);">Trilha (Veridis Quo):</span>
+        <audio controls loop>
+          <source src="Daft Punk - Veridis Quo (Official Audio).mp3" type="audio/mpeg">
+          O seu navegador não suporta áudio.
+        </audio>
+      </div>
     </div>
 
     <!-- Animated 8-Bit Canvas Scene -->
@@ -295,10 +314,11 @@
 
     <!-- Dialogue / Story Box -->
     <div class="story-box">
-      <div class="story-title">🏰 O Chamado da Masmorra</div>
+      <div class="story-title">🏰 O Chamado da Masmorra & Prólogo</div>
       <div class="story-text">
-        <p>Nas profundezas das sombras da Floresta dos Carvalhos, o terrível Rei Rato aprisionou a Princesa Lilla no topo da sua torre sombria.</p>
-        <p>Seis corajosos ratinhos aventureiros responderam ao pedido de socorro. Escolha o seu herói e prepare-se para adentrar os salões esquecidos da masmorra!</p>
+        <p>Nas profundezas úmidas e esquecidas da Floresta dos Carvalhos, o tirano <strong>Rei Rato</strong> invadiu a fortaleza e aprisionou a <strong>Princesa Lilla</strong> no topo da torre mais alta.</p>
+        <p>O reino está em perigo, e os recursos minguam. Apenas um grupo de corajosos ratinhos aventureiros, armados com agulhas, botões e muita audácia, pode cruzar a masmorra e desafiar as sombras.</p>
+        <p style="color: var(--accent-gold);">Selecione o seu herói abaixo para inspecionar o equipamento de Mausritter antes de iniciar a sessão!</p>
       </div>
     </div>
 
@@ -312,46 +332,22 @@
     </div>
 
     <footer>
-      Mausritter 8-Bit Interface • Criado para a mesa de RPG • 2026
+      Mausritter 8-Bit Interface • Desenvolvido para a mesa de RPG • 2026
     </footer>
   </div>
 
-  <!-- Background Music -->
-  <audio id="bgMusic" loop>
-    <source src="Daft Punk - Veridis Quo (Official Audio).mp3" type="audio/mpeg">
-  </audio>
+  <!-- Modal de Encontro -->
+  <div class="modal" id="dungeonModal">
+    <div class="modal-content">
+      <div class="modal-title" id="modalHeroTitle">Aventureiro Pronto!</div>
+      <div class="modal-text" id="modalHeroDesc">
+        As tochas tremeluzem nas paredes de pedra da masmorra. O cheiro de queijo mofado e perigo preenche o ar. A porta pesada de carvalho range à frente...
+      </div>
+      <button class="start-btn" id="closeModalBtn" style="font-size: 10px; padding: 10px 16px;">ENTRAR NA MASMORRA</button>
+    </div>
+  </div>
 
   <script>
-    // --- Audio System ---
-    const bgMusic = document.getElementById('bgMusic');
-    const audioToggle = document.getElementById('audioToggle');
-    let isPlaying = false;
-
-    function toggleAudio() {
-      if (isPlaying) {
-        bgMusic.pause();
-        isPlaying = false;
-        audioToggle.style.opacity = "0.6";
-      } else {
-        bgMusic.play().then(() => {
-          isPlaying = true;
-          audioToggle.style.opacity = "1";
-        }).catch(e => console.log("Erro de autoplay:", e));
-      }
-    }
-
-    audioToggle.addEventListener('click', toggleAudio);
-
-    // Auto-play attempt on first user interaction
-    document.body.addEventListener('click', () => {
-      if (!isPlaying) {
-        bgMusic.play().then(() => {
-          isPlaying = true;
-          audioToggle.style.opacity = "1";
-        }).catch(() => {});
-      }
-    }, { once: true });
-
     // --- Sound Effects (Web Audio API Chiptune) ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playBeep(freq, type = 'square', duration = 0.08) {
@@ -368,7 +364,7 @@
       osc.stop(audioCtx.currentTime + duration);
     }
 
-    // --- Hero Data ---
+    // --- Hero Data (Mausritter Style) ---
     const heroes = [
       { name: "Kael", class: "Guerreiro", hp: 6, str: 10, dex: 8, wil: 9, weapon: "Espada de Alfinete", armor: "Escudo de Queijo", color: "#e74c3c" },
       { name: "Pip", class: "Mago", hp: 4, str: 7, dex: 9, wil: 12, weapon: "Cajado de Glicínia", armor: "Manto de Folha", color: "#9b59b6" },
@@ -421,10 +417,20 @@
 
     renderRoster();
 
+    // Modal / Start action
+    const modal = document.getElementById('dungeonModal');
     document.getElementById('startBtn').addEventListener('click', () => {
       playBeep(587, 'square', 0.1);
       setTimeout(() => playBeep(880, 'square', 0.2), 100);
-      alert(`⚔️ O herói ${heroes[selectedHeroIndex].name} lidera a expedição para salvar a Princesa! Boa sorte na mesa de sexta-feira!`);
+      const hero = heroes[selectedHeroIndex];
+      document.getElementById('modalHeroTitle').innerText = `Herói Selecionado: ${hero.name} (${hero.class})`;
+      document.getElementById('modalHeroDesc').innerText = `O bravo ${hero.name} ergue sua ${hero.weapon} e assume a liderança do grupo. A porta da masmorra do Rei Rato se abre. Boa sorte na mesa de sexta-feira, T!`;
+      modal.style.display = 'flex';
+    });
+
+    document.getElementById('closeModalBtn').addEventListener('click', () => {
+      playBeep(330, 'square', 0.08);
+      modal.style.display = 'none';
     });
 
     // --- 8-Bit Pixel Art Canvas Animation ---
@@ -476,15 +482,12 @@
 
       // Castle Silhouette
       ctx.fillStyle = '#0d0e17';
-      // Main Keep
       ctx.fillRect(220, 90, 60, 90);
-      // Left Tower
       ctx.fillRect(200, 110, 24, 70);
       ctx.fillRect(196, 104, 32, 8);
-      // Right Tower
       ctx.fillRect(276, 110, 24, 70);
       ctx.fillRect(272, 104, 32, 8);
-      // Princess Window (Glowing Red/Pink)
+      
       const windowGlow = Math.sin(tick * 0.1) > 0 ? '#ff4757' : '#ffa502';
       ctx.fillStyle = windowGlow;
       ctx.fillRect(246, 105, 8, 12);
@@ -495,13 +498,12 @@
       ctx.ellipse(240, 260, 300, 90, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw 6 Mice on the Hill
+      // Draw Mice on the Hill
       heroes.forEach((h, i) => {
-        const mouseX = 80 + (i * 64);
+        const mouseX = 50 + (i * 68);
         const mouseY = 185 + Math.sin((tick + i * 20) * 0.08) * 2;
         const isSelected = i === selectedHeroIndex;
 
-        // Selection Arrow
         if (isSelected) {
           ctx.fillStyle = '#f1e05a';
           ctx.beginPath();
@@ -511,16 +513,14 @@
           ctx.fill();
         }
 
-        // Mouse Body (Pixel Art style)
         ctx.fillStyle = h.color;
-        ctx.fillRect(mouseX, mouseY - 8, 12, 10); // body
-        ctx.fillRect(mouseX - 2, mouseY - 12, 5, 5); // ear L
-        ctx.fillRect(mouseX + 9, mouseY - 12, 5, 5); // ear R
+        ctx.fillRect(mouseX, mouseY - 8, 12, 10);
+        ctx.fillRect(mouseX - 2, mouseY - 12, 5, 5);
+        ctx.fillRect(mouseX + 9, mouseY - 12, 5, 5);
         ctx.fillStyle = '#000';
-        ctx.fillRect(mouseX + 2, mouseY - 6, 2, 2); // eye
-        ctx.fillRect(mouseX + 8, mouseY - 6, 2, 2); // eye
+        ctx.fillRect(mouseX + 2, mouseY - 6, 2, 2);
+        ctx.fillRect(mouseX + 8, mouseY - 6, 2, 2);
 
-        // Staff / Weapon
         ctx.fillStyle = '#dcdde1';
         ctx.fillRect(mouseX + 13, mouseY - 14, 2, 16);
       });
