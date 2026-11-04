@@ -1,534 +1,671 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mausritter - A Jornada dos Heróis 8-Bit</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-color: #0b0e14;
-      --card-bg: #161b22;
-      --border-color: #30363d;
-      --primary-green: #3fb950;
-      --accent-gold: #f1e05a;
-      --danger-red: #f85149;
-      --text-main: #c9d1d9;
-      --text-muted: #8b949e;
-      --retro-font: 'Press Start 2P', cursive;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-    }
-
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      font-family: var(--retro-font);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px 10px;
-      overflow-x: hidden;
-      position: relative;
-    }
-
-    /* CRT Overlay Effect */
-    .crt-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: linear-gradient(
-        rgba(18, 16, 16, 0) 50%, 
-        rgba(0, 0, 0, 0.25) 50%
-      ), linear-gradient(
-        90deg,
-        rgba(255, 0, 0, 0.03),
-        rgba(0, 255, 0, 0.01),
-        rgba(0, 0, 255, 0.03)
-      );
-      background-size: 100% 4px, 6px 100%;
-      pointer-events: none;
-      z-index: 99;
-      opacity: 0.8;
-    }
-
-    .container {
-      max-width: 900px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      z-index: 10;
-    }
-
-    /* Header & Audio Controls */
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--card-bg);
-      border: 4px solid var(--border-color);
-      padding: 12px 16px;
-      box-shadow: 0 4px 0 #000;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .audio-player-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    audio {
-      height: 32px;
-      filter: invert(90%) hue-rotate(180deg);
-    }
-
-    /* 8-Bit Canvas Scene */
-    .canvas-container {
-      position: relative;
-      width: 100%;
-      height: 280px;
-      border: 4px solid var(--border-color);
-      box-shadow: 0 6px 0 #000;
-      overflow: hidden;
-      background-color: #05050d;
-    }
-
-    canvas {
-      width: 100%;
-      height: 100%;
-      image-rendering: pixelated;
-    }
-
-    /* Story Box */
-    .story-box {
-      background: #0d1117;
-      border: 4px dashed var(--accent-gold);
-      padding: 20px;
-      box-shadow: 0 4px 0 #000;
-    }
-
-    .story-title {
-      color: var(--accent-gold);
-      font-size: 14px;
-      margin-bottom: 12px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .story-text {
-      font-size: 10px;
-      line-height: 1.8;
-      color: var(--text-main);
-    }
-
-    .story-text p {
-      margin-bottom: 10px;
-    }
-
-    /* Character Roster */
-    .roster-title {
-      font-size: 12px;
-      color: var(--primary-green);
-      margin-top: 10px;
-      text-transform: uppercase;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px;
-    }
-
-    .hero-card {
-      background: var(--card-bg);
-      border: 3px solid var(--border-color);
-      padding: 12px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      box-shadow: 0 4px 0 #000;
-    }
-
-    .hero-card:hover {
-      border-color: var(--primary-green);
-      transform: translateY(-2px);
-    }
-
-    .hero-card.selected {
-      border-color: var(--accent-gold);
-      background: #1c2129;
-      box-shadow: 0 0 10px rgba(241, 224, 90, 0.3), 0 4px 0 #000;
-    }
-
-    .hero-avatar {
-      width: 48px;
-      height: 48px;
-      background: #000;
-      border: 2px solid var(--border-color);
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .hero-name {
-      font-size: 10px;
-      color: var(--accent-gold);
-      margin-bottom: 4px;
-    }
-
-    .hero-class {
-      font-size: 8px;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-    }
-
-    .hero-stats {
-      font-size: 8px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      text-align: left;
-      border-top: 1px dashed var(--border-color);
-      padding-top: 6px;
-    }
-
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .stat-val {
-      color: var(--primary-green);
-    }
-
-    /* Action Panel */
-    .action-panel {
-      display: flex;
-      justify-content: center;
-      padding: 10px 0;
-    }
-
-    .start-btn {
-      background: var(--danger-red);
-      color: #fff;
-      border: 3px solid #fff;
-      padding: 16px 24px;
-      font-family: var(--retro-font);
-      font-size: 12px;
-      cursor: pointer;
-      box-shadow: 0 6px 0 #000;
-      animation: pulse 1.5s infinite alternate;
-    }
-
-    .start-btn:hover {
-      background: #ff6b6b;
-      transform: scale(1.05);
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      100% { transform: scale(1.03); }
-    }
-
-    /* Modal / Encounter Screen */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.85);
-      z-index: 100;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-content {
-      background: var(--card-bg);
-      border: 4px solid var(--accent-gold);
-      padding: 24px;
-      max-width: 500px;
-      width: 90%;
-      text-align: center;
-      box-shadow: 0 8px 0 #000;
-    }
-
-    .modal-title {
-      font-size: 14px;
-      color: var(--accent-gold);
-      margin-bottom: 15px;
-    }
-
-    .modal-text {
-      font-size: 9px;
-      line-height: 1.6;
-      margin-bottom: 20px;
-      color: var(--text-main);
-    }
-
-    footer {
-      margin-top: 20px;
-      font-size: 8px;
-      color: var(--text-muted);
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="crt-overlay"></div>
-
-  <div class="container">
-    <!-- Top Bar with Audio Controls -->
-    <div class="top-bar">
-      <div style="font-size: 10px; color: var(--accent-gold);">⚔️ MAUSRITTER: O RESGATE</div>
-      <div class="audio-player-wrapper">
-        <span style="font-size: 8px; color: var(--text-muted);">Trilha (Veridis Quo):</span>
-        <audio controls loop>
-          <source src="Daft Punk - Veridis Quo (Official Audio).mp3" type="audio/mpeg">
-          O seu navegador não suporta áudio.
-        </audio>
-      </div>
-    </div>
-
-    <!-- Animated 8-Bit Canvas Scene -->
-    <div class="canvas-container">
-      <canvas id="gameCanvas" width="480" height="240"></canvas>
-    </div>
-
-    <!-- Dialogue / Story Box -->
-    <div class="story-box">
-      <div class="story-title">🏰 O Chamado da Masmorra & Prólogo</div>
-      <div class="story-text">
-        <p>Nas profundezas úmidas e esquecidas da Floresta dos Carvalhos, o tirano <strong>Rei Rato</strong> invadiu a fortaleza e aprisionou a <strong>Princesa Lilla</strong> no topo da torre mais alta.</p>
-        <p>O reino está em perigo, e os recursos minguam. Apenas um grupo de corajosos ratinhos aventureiros, armados com agulhas, botões e muita audácia, pode cruzar a masmorra e desafiar as sombras.</p>
-        <p style="color: var(--accent-gold);">Selecione o seu herói abaixo para inspecionar o equipamento de Mausritter antes de iniciar a sessão!</p>
-      </div>
-    </div>
-
-    <!-- Hero Selection -->
-    <div class="roster-title">🛡️ Selecione o seu Ratinho:</div>
-    <div class="hero-grid" id="heroGrid"></div>
-
-    <!-- Action Button -->
-    <div class="action-panel">
-      <button class="start-btn" id="startBtn">⚔️ INICIAR EXPLORAÇÃO DA MASMORRA</button>
-    </div>
-
-    <footer>
-      Mausritter 8-Bit Interface • Desenvolvido para a mesa de RPG • 2026
-    </footer>
-  </div>
-
-  <!-- Modal de Encontro -->
-  <div class="modal" id="dungeonModal">
-    <div class="modal-content">
-      <div class="modal-title" id="modalHeroTitle">Aventureiro Pronto!</div>
-      <div class="modal-text" id="modalHeroDesc">
-        As tochas tremeluzem nas paredes de pedra da masmorra. O cheiro de queijo mofado e perigo preenche o ar. A porta pesada de carvalho range à frente...
-      </div>
-      <button class="start-btn" id="closeModalBtn" style="font-size: 10px; padding: 10px 16px;">ENTRAR NA MASMORRA</button>
-    </div>
-  </div>
-
-  <script>
-    // --- Sound Effects (Web Audio API Chiptune) ---
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playBeep(freq, type = 'square', duration = 0.08) {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + duration);
-    }
-
-    // --- Hero Data (Mausritter Style) ---
-    const heroes = [
-      { name: "Kael", class: "Guerreiro", hp: 6, str: 10, dex: 8, wil: 9, weapon: "Espada de Alfinete", armor: "Escudo de Queijo", color: "#e74c3c" },
-      { name: "Pip", class: "Mago", hp: 4, str: 7, dex: 9, wil: 12, weapon: "Cajado de Glicínia", armor: "Manto de Folha", color: "#9b59b6" },
-      { name: "Sombra", class: "Gatuno", hp: 5, str: 8, dex: 12, wil: 7, weapon: "Adaga de Anzol", armor: "Couro de Besouro", color: "#f1c40f" },
-      { name: "Bramble", class: "Caçador", hp: 5, str: 9, dex: 11, wil: 8, weapon: "Arco de Espinho", armor: "Túnica de Linho", color: "#2ecc71" },
-      { name: "Madre Barnaby", class: "Clériga", hp: 6, str: 11, dex: 7, wil: 11, weapon: "Martelo de Prego", armor: "Cota de Anéis", color: "#3498db" },
-      { name: "Finn", class: "Bardo", hp: 4, str: 8, dex: 10, wil: 10, weapon: "Alaúde de Nóz", armor: "Capa Elegante", color: "#e67e22" }
-    ];
-
-    let selectedHeroIndex = 0;
-    const heroGrid = document.getElementById('heroGrid');
-
-    function renderRoster() {
-      heroGrid.innerHTML = '';
-      heroes.forEach((hero, idx) => {
-        const card = document.createElement('div');
-        card.className = `hero-card ${idx === selectedHeroIndex ? 'selected' : ''}`;
-        card.innerHTML = `
-          <div class="hero-avatar" style="border-color: ${hero.color};">
-            <svg width="24" height="24" viewBox="0 0 16 16" fill="${hero.color}">
-              <rect x="5" y="4" width="6" height="6" />
-              <rect x="3" y="2" width="3" height="3" />
-              <rect x="10" y="2" width="3" height="3" />
-              <rect x="6" y="10" width="4" height="4" />
-              <circle cx="6.5" cy="6.5" r="0.8" fill="#fff" />
-              <circle cx="9.5" cy="6.5" r="0.8" fill="#fff" />
-            </svg>
-          </div>
-          <div class="hero-name">${hero.name}</div>
-          <div class="hero-class">${hero.class}</div>
-          <div class="hero-stats">
-            <div class="stat-row"><span>PV:</span><span class="stat-val">${hero.hp}</span></div>
-            <div class="stat-row"><span>FOR:</span><span class="stat-val">${hero.str}</span></div>
-            <div class="stat-row"><span>DES:</span><span class="stat-val">${hero.dex}</span></div>
-            <div class="stat-row"><span>VON:</span><span class="stat-val">${hero.wil}</span></div>
-            <div class="stat-row" style="margin-top:4px; font-size:7px; color:var(--text-muted);"><span>Arma:</span></div>
-            <div style="font-size:7px; color:var(--accent-gold);">${hero.weapon}</div>
-          </div>
-        `;
-
-        card.addEventListener('click', () => {
-          selectedHeroIndex = idx;
-          playBeep(440, 'square', 0.05);
-          renderRoster();
-        });
-
-        heroGrid.appendChild(card);
-      });
-    }
-
-    renderRoster();
-
-    // Modal / Start action
-    const modal = document.getElementById('dungeonModal');
-    document.getElementById('startBtn').addEventListener('click', () => {
-      playBeep(587, 'square', 0.1);
-      setTimeout(() => playBeep(880, 'square', 0.2), 100);
-      const hero = heroes[selectedHeroIndex];
-      document.getElementById('modalHeroTitle').innerText = `Herói Selecionado: ${hero.name} (${hero.class})`;
-      document.getElementById('modalHeroDesc').innerText = `O bravo ${hero.name} ergue sua ${hero.weapon} e assume a liderança do grupo. A porta da masmorra do Rei Rato se abre. Boa sorte na mesa de sexta-feira, T!`;
-      modal.style.display = 'flex';
-    });
-
-    document.getElementById('closeModalBtn').addEventListener('click', () => {
-      playBeep(330, 'square', 0.08);
-      modal.style.display = 'none';
-    });
-
-    // --- 8-Bit Pixel Art Canvas Animation ---
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-
-    let stars = [];
-    for(let i = 0; i < 40; i++) {
-      stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * 120,
-        size: Math.random() > 0.8 ? 2 : 1,
-        blink: Math.random() * 100
-      });
-    }
-
-    let tick = 0;
-
-    function drawPixelArt() {
-      tick++;
-      ctx.fillStyle = '#090a14';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Stars
-      stars.forEach(star => {
-        const opacity = (Math.sin((tick + star.blink) * 0.05) + 1) / 2;
-        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-        ctx.fillRect(star.x, star.y, star.size, star.size);
-      });
-
-      // Moon
-      ctx.fillStyle = '#f1e05a';
-      ctx.fillRect(380, 25, 20, 20);
-      ctx.fillStyle = '#090a14';
-      ctx.fillRect(376, 23, 14, 20);
-
-      // Distant Mountains
-      ctx.fillStyle = '#181a29';
-      ctx.beginPath();
-      ctx.moveTo(0, 180);
-      ctx.lineTo(80, 110);
-      ctx.lineTo(160, 180);
-      ctx.lineTo(260, 100);
-      ctx.lineTo(360, 180);
-      ctx.lineTo(480, 130);
-      ctx.lineTo(480, 240);
-      ctx.lineTo(0, 240);
-      ctx.fill();
-
-      // Castle Silhouette
-      ctx.fillStyle = '#0d0e17';
-      ctx.fillRect(220, 90, 60, 90);
-      ctx.fillRect(200, 110, 24, 70);
-      ctx.fillRect(196, 104, 32, 8);
-      ctx.fillRect(276, 110, 24, 70);
-      ctx.fillRect(272, 104, 32, 8);
-      
-      const windowGlow = Math.sin(tick * 0.1) > 0 ? '#ff4757' : '#ffa502';
-      ctx.fillStyle = windowGlow;
-      ctx.fillRect(246, 105, 8, 12);
-
-      // Foreground Hill
-      ctx.fillStyle = '#111622';
-      ctx.beginPath();
-      ctx.ellipse(240, 260, 300, 90, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Draw Mice on the Hill
-      heroes.forEach((h, i) => {
-        const mouseX = 50 + (i * 68);
-        const mouseY = 185 + Math.sin((tick + i * 20) * 0.08) * 2;
-        const isSelected = i === selectedHeroIndex;
-
-        if (isSelected) {
-          ctx.fillStyle = '#f1e05a';
-          ctx.beginPath();
-          ctx.moveTo(mouseX + 6, mouseY - 14);
-          ctx.lineTo(mouseX + 2, mouseY - 20);
-          ctx.lineTo(mouseX + 10, mouseY - 20);
-          ctx.fill();
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mausritter: O Resgate da Princesa Ratinha (8-Bit RPG)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        /* Pixel perfect styling & custom retro fonts */
+        body {
+            font-family: 'Press Start 2P', monospace;
+            background-color: #08070d;
+            color: #e2e8f0;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow-x: hidden;
+            image-rendering: pixelated;
         }
 
-        ctx.fillStyle = h.color;
-        ctx.fillRect(mouseX, mouseY - 8, 12, 10);
-        ctx.fillRect(mouseX - 2, mouseY - 12, 5, 5);
-        ctx.fillRect(mouseX + 9, mouseY - 12, 5, 5);
-        ctx.fillStyle = '#000';
-        ctx.fillRect(mouseX + 2, mouseY - 6, 2, 2);
-        ctx.fillRect(mouseX + 8, mouseY - 6, 2, 2);
+        .font-vt323 {
+            font-family: 'VT323', monospace;
+        }
 
-        ctx.fillStyle = '#dcdde1';
-        ctx.fillRect(mouseX + 13, mouseY - 14, 2, 16);
-      });
+        /* 8-bit Pixel Borders */
+        .pixel-box {
+            border: 4px solid #ffffff;
+            box-shadow: 
+                -4px 0 0 0 #000,
+                4px 0 0 0 #000,
+                0 -4px 0 0 #000,
+                0 4px 0 0 #000,
+                inset -4px -4px 0 0 #334155;
+            background-color: #0f172a;
+        }
 
-      requestAnimationFrame(drawPixelArt);
-    }
+        .pixel-box-gold {
+            border: 4px solid #f59e0b;
+            box-shadow: 
+                -4px 0 0 0 #000,
+                4px 0 0 0 #000,
+                0 -4px 0 0 #000,
+                0 4px 0 0 #000,
+                inset -4px -4px 0 0 #78350f;
+            background-color: #1e1b4b;
+        }
 
-    drawPixelArt();
-  </script>
+        .pixel-btn {
+            position: relative;
+            display: inline-block;
+            background-color: #2563eb;
+            color: #ffffff;
+            text-align: center;
+            border: 4px solid #000;
+            box-shadow: inset -4px -4px 0px 0px #1e40af, inset 4px 4px 0px 0px #60a5fa;
+            cursor: pointer;
+            transition: transform 0.05s ease;
+        }
+
+        .pixel-btn:hover {
+            background-color: #3b82f6;
+            transform: scale(1.02);
+        }
+
+        .pixel-btn:active {
+            transform: scale(0.98);
+            box-shadow: inset 4px 4px 0px 0px #1e40af, inset -4px -4px 0px 0px #60a5fa;
+        }
+
+        .pixel-btn-danger {
+            background-color: #dc2626;
+            box-shadow: inset -4px -4px 0px 0px #991b1b, inset 4px 4px 0px 0px #f87171;
+        }
+        .pixel-btn-danger:hover { background-color: #ef4444; }
+
+        /* CRT Scanlines Screen Overlay */
+        .crt-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.03),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.03)
+            );
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+            z-index: 999;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .crt-off {
+            opacity: 0 !important;
+        }
+
+        @keyframes crtFlicker {
+            0% { opacity: 0.97; }
+            50% { opacity: 1; }
+            100% { opacity: 0.98; }
+        }
+        .crt-overlay {
+            animation: crtFlicker 0.15s infinite;
+        }
+
+        .hero-card {
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .hero-card:hover {
+            border-color: #fbbf24 !important;
+            transform: translateY(-4px);
+        }
+        .hero-card.selected {
+            border-color: #f59e0b !important;
+            background-color: #312e81 !important;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border: 2px solid #000;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start p-2 sm:p-4 bg-slate-950 text-slate-100">
+
+    <!-- CRT Filter Layer -->
+    <div id="crtOverlay" class="crt-overlay"></div>
+
+    <!-- Background Audio (Veridis Quo em loop até 50s) -->
+    <audio id="bgMusic" src="veridis-quo.mp3" preload="auto"></audio>
+
+    <!-- Main Game Container -->
+    <main class="w-full max-w-5xl flex flex-col items-center gap-4 my-auto relative z-10">
+
+        <!-- Top Control Bar -->
+        <header class="w-full flex flex-wrap items-center justify-between gap-2 px-2 text-xs sm:text-sm">
+            <div class="flex items-center gap-2">
+                <span class="inline-block w-3 h-3 bg-emerald-500 animate-pulse rounded-full"></span>
+                <h1 class="text-amber-400 font-bold tracking-wider text-xs sm:text-base">MAUSRITTER 8-BIT INTRO</h1>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <button id="btnSound" onclick="toggleAudio()" class="pixel-btn px-2 py-1 text-xs">
+                    🔊 MÚSICA: <span id="soundStatus">OFF</span>
+                </button>
+                <button id="btnCRT" onclick="toggleCRT()" class="pixel-btn px-2 py-1 text-xs">
+                    📺 CRT: ON
+                </button>
+            </div>
+        </header>
+
+        <!-- Canvas Pixel Scene Viewport (Com os ratinhos olhando para o castelo sem caixa de texto inicial) -->
+        <section class="w-full relative pixel-box overflow-hidden rounded-sm" style="height: 340px;">
+            <canvas id="gameSceneCanvas" class="w-full h-full block"></canvas>
+        </section>
+
+        <!-- Character Selection & Party Dashboard -->
+        <section class="w-full grid grid-cols-1 lg:grid-cols-3 gap-4">
+            
+            <!-- Left Side: Hero Roster Selection -->
+            <div class="lg:col-span-2 flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-amber-400 text-xs sm:text-sm uppercase tracking-wider">
+                        ⚔️ Escolha o seu Ratinho Herói:
+                    </h2>
+                    <span class="text-[10px] text-slate-400 font-vt323 text-base">Mausritter Ruleset v1.0</span>
+                </div>
+
+                <!-- 5 Mouse Heroes Grid -->
+                <div class="grid grid-cols-5 gap-1.5 sm:gap-2" id="heroSelectorGrid">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+
+                <!-- Hero Detail Card & Lore Panel -->
+                <div id="heroDetailPanel" class="pixel-box-gold p-4 flex flex-col md:flex-row gap-4 items-start relative min-h-[200px]">
+                    <!-- Rendered by JS based on active selection -->
+                </div>
+            </div>
+
+            <!-- Right Side: Dungeon & Campaign Control Center -->
+            <div class="flex flex-col gap-3">
+                <h2 class="text-amber-400 text-xs sm:text-sm uppercase tracking-wider">
+                    🏰 Painel do Mestre / Aventura
+                </h2>
+
+                <div class="pixel-box p-4 flex-1 flex flex-col justify-between gap-4">
+                    <div>
+                        <div class="text-xs text-amber-300 font-bold mb-2 flex items-center justify-between border-b border-slate-700 pb-1">
+                            <span>SESSÃO DE SEXTA</span>
+                            <span class="text-[10px] text-emerald-400">PRONTO</span>
+                        </div>
+                        <p class="font-vt323 text-lg leading-snug text-slate-300">
+                            Uma tempestade de sombras caiu sobre o Condado de Carvalho. O terrível Rei-Rato aprisionou a Princesa Lilla no topo da Torre do Abismo.
+                        </p>
+                        
+                        <div class="mt-3 p-2 bg-slate-900 border border-slate-700 rounded text-[11px] font-vt323 text-amber-200">
+                            🎯 <strong>Objetivo Principal:</strong> Infiltrar-se na Masmorra, derrotar as gárgulas e resgatar a princesa antes da meia-noite!
+                        </div>
+                    </div>
+
+                    <!-- Interactive Buttons -->
+                    <div class="flex flex-col gap-2">
+                        <button onclick="startDungeonEncounter()" class="pixel-btn pixel-btn-danger w-full py-3 text-xs sm:text-sm font-bold tracking-wider">
+                            ⚔️ INICIAR EXPLORAÇÃO ⚔️
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer Retro Specs -->
+        <footer class="w-full text-center text-[10px] text-slate-500 mt-2 font-vt323 text-base flex justify-between items-center px-1">
+            <span>Mausritter RPG Companion • Feito para a Mesa de RPG de Sexta-Feira</span>
+            <span class="hidden sm:inline">Paleta 8-bit NES Classic</span>
+        </footer>
+    </main>
+
+    <!-- Modal: Interactive Battle / Dungeon Intro Preview -->
+    <div id="dungeonModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4">
+        <div class="pixel-box-gold max-w-lg w-full p-6 text-center flex flex-col items-center gap-4 relative">
+            <h3 id="modalTitle" class="text-amber-400 text-sm sm:text-base font-bold">ADENTRANDO A MASMORRA!</h3>
+            
+            <div class="w-full h-32 bg-slate-950 border-2 border-slate-700 flex items-center justify-center relative overflow-hidden" id="modalCanvasContainer">
+                <canvas id="battleCanvas" class="w-full h-full"></canvas>
+            </div>
+
+            <p id="modalDescription" class="font-vt323 text-xl text-slate-200 leading-snug">
+                Os ratinhos acendem suas tochas e marcham em direção aos portões enferrujados do castelo... Preparem seus dados de d6!
+            </p>
+
+            <button onclick="closeDungeonModal()" class="pixel-btn px-6 py-2 text-xs">
+                VOLTAR À TELA INICIAL
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript Game Logic & Audio Loop Controller -->
+    <script>
+        const HEROES = [
+            {
+                id: 'knight',
+                name: 'Kael, o Valente',
+                title: 'Guerreiro da Guarda Real',
+                hp: 6, maxHp: 6, str: 12, agi: 9, wil: 8,
+                weapon: 'Espada de Alfinete & Escudo de Queijo',
+                armor: 'Armadura de Tampinha de Garrafa (Proteção 1)',
+                item: 'Rolo de Corda de Nylon (10m)',
+                color: '#ef4444', desc: 'Destemido e liderando na linha de frente.', spriteType: 'knight'
+            },
+            {
+                id: 'wizard',
+                name: 'Pip, o Arcano',
+                title: 'Mago dos Cogumelos',
+                hp: 4, maxHp: 4, str: 7, agi: 10, wil: 14,
+                weapon: 'Cajado de Glicínia & Esfera Luminescente',
+                armor: 'Túnica de Folha Seca',
+                item: 'Magia: Luz Solar & Feitiço da Faísca',
+                color: '#a855f7', desc: 'Mestre no uso de relíquias misteriosas.', spriteType: 'wizard'
+            },
+            {
+                id: 'rogue',
+                name: 'Sombra',
+                title: 'Gatuno das Sombras',
+                hp: 5, maxHp: 5, str: 8, agi: 14, wil: 9,
+                weapon: 'Adagas Duplas de Anzol',
+                armor: 'Manto de Couro de Besouro',
+                item: 'Ganchos de Escalada & Anestésico',
+                color: '#10b981', desc: 'Especialista em mover-se sem fazer ruído.', spriteType: 'rogue'
+            },
+            {
+                id: 'ranger',
+                name: 'Bramble',
+                title: 'Caçador da Floresta',
+                hp: 5, maxHp: 5, str: 10, agi: 12, wil: 10,
+                weapon: 'Arco de Garra de Passarinho',
+                armor: 'Colete de Casca de Noz',
+                item: 'Aljava com 12 Flechas de Espinho',
+                color: '#f59e0b', desc: 'Olhos de águia nas sombras.', spriteType: 'ranger'
+            },
+            {
+                id: 'cleric',
+                name: 'Madre Barnaby',
+                title: 'Clériga do Carvalho',
+                hp: 6, maxHp: 6, str: 11, agi: 8, wil: 13,
+                weapon: 'Martelo de Prego Maciço',
+                armor: 'Cota de Malha de Anéis de Cadarço',
+                item: 'Bálsamo Curativo & Símbolo Sagrado',
+                color: '#3b82f6', desc: 'Devota protetora e curandeira do bando.', spriteType: 'cleric'
+            }
+        ];
+
+        let activeHeroIndex = 0;
+        let audioEnabled = false;
+        let crtEnabled = true;
+        const bgMusic = document.getElementById('bgMusic');
+
+        // Configuração do loop do Veridis Quo até 50 segundos
+        bgMusic.addEventListener('timeupdate', () => {
+            if (bgMusic.currentTime >= 50) {
+                bgMusic.currentTime = 0;
+                bgMusic.play();
+            }
+        });
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            document.getElementById('soundStatus').innerText = audioEnabled ? 'ON' : 'OFF';
+            document.getElementById('btnSound').classList.toggle('bg-emerald-600', audioEnabled);
+            
+            if (audioEnabled) {
+                bgMusic.currentTime = 0;
+                bgMusic.play().catch(e => console.log("Autoplay bloqueado pelo browser:", e));
+            } else {
+                bgMusic.pause();
+            }
+        }
+
+        // Tenta iniciar a música no primeiro clique na página (para burlar restrição de autoplay dos navegadores)
+        document.body.addEventListener('click', () => {
+            if (!audioEnabled && bgMusic.paused) {
+                // Mantém o estado visual desligado até que o usuário clique no botão de som, ou pode ligar direto se preferir.
+            }
+        }, { once: true });
+
+        function toggleCRT() {
+            crtEnabled = !crtEnabled;
+            const crt = document.getElementById('crtOverlay');
+            const btn = document.getElementById('btnCRT');
+            
+            if (crtEnabled) {
+                crt.classList.remove('crt-off');
+                btn.innerText = '📺 CRT: ON';
+            } else {
+                crt.classList.add('crt-off');
+                btn.innerText = '📺 CRT: OFF';
+            }
+        }
+
+        /* Canvas 8-Bit Scene Rendering */
+        const canvas = document.getElementById('gameSceneCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+
+        let animFrameId;
+        let starField = [];
+        let lightningTimer = 0;
+        let showLightning = false;
+
+        for (let i = 0; i < 40; i++) {
+            starField.push({
+                x: Math.random(),
+                y: Math.random() * 0.45,
+                size: Math.random() > 0.8 ? 3 : 2,
+                blinkSpeed: 0.02 + Math.random() * 0.04,
+                alpha: Math.random()
+            });
+        }
+
+        function drawPixelRect(x, y, w, h, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(Math.floor(x), Math.floor(y), Math.floor(w), Math.floor(h));
+        }
+
+        function drawPixelMouse(x, y, hero, isSelected, time) {
+            const scale = 2.5;
+            const bounce = isSelected ? Math.sin(time * 8) * 3 : Math.sin(time * 3 + x) * 1;
+            const baseY = y - bounce;
+
+            if (isSelected) {
+                ctx.fillStyle = '#fbbf24';
+                ctx.beginPath();
+                ctx.arc(x + 10, baseY + 18, 14, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            drawPixelRect(x + 4, baseY + 8, 12, 14, '#64748b');
+            drawPixelRect(x + 2, baseY + 4, 16, 8, '#94a3b8');
+            drawPixelRect(x + 1, baseY + 1, 5, 5, '#f472b6');
+            drawPixelRect(x + 14, baseY + 1, 5, 5, '#f472b6');
+            drawPixelRect(x + 8, baseY + 8, 4, 3, '#f43f5e');
+            drawPixelRect(x + 4, baseY + 5, 2, 2, '#000000');
+            drawPixelRect(x + 14, baseY + 5, 2, 2, '#000000');
+            drawPixelRect(x - 4, baseY + 18, 8, 2, '#f472b6');
+            drawPixelRect(x + 4, baseY + 12, 12, 6, hero.color);
+
+            if (hero.spriteType === 'knight') {
+                drawPixelRect(x + 16, baseY + 4, 2, 12, '#e2e8f0');
+                drawPixelRect(x + 14, baseY + 12, 6, 2, '#fbbf24');
+            } else if (hero.spriteType === 'wizard') {
+                drawPixelRect(x + 16, baseY, 2, 18, '#78350f');
+                drawPixelRect(x + 15, baseY - 3, 4, 4, '#c084fc');
+            } else if (hero.spriteType === 'rogue') {
+                drawPixelRect(x - 2, baseY + 8, 3, 6, '#cbd5e1');
+                drawPixelRect(x + 17, baseY + 8, 3, 6, '#cbd5e1');
+            } else if (hero.spriteType === 'ranger') {
+                drawPixelRect(x + 16, baseY + 2, 2, 14, '#b45309');
+            } else if (hero.spriteType === 'cleric') {
+                drawPixelRect(x + 15, baseY + 4, 5, 5, '#94a3b8');
+                drawPixelRect(x + 17, baseY + 9, 2, 9, '#78350f');
+            }
+        }
+
+        function renderScene(timestamp) {
+            const time = timestamp * 0.001;
+            const w = canvas.width;
+            const h = canvas.height;
+
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.6);
+            skyGrad.addColorStop(0, showLightning ? '#3b0764' : '#090514');
+            skyGrad.addColorStop(0.6, showLightning ? '#581c87' : '#1e1b4b');
+            skyGrad.addColorStop(1, '#311b92');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            lightningTimer++;
+            if (lightningTimer > 250 && Math.random() > 0.96) {
+                showLightning = true;
+                if (lightningTimer > 256) {
+                    showLightning = false;
+                    lightningTimer = 0;
+                }
+            }
+
+            starField.forEach(star => {
+                star.alpha += star.blinkSpeed;
+                if (star.alpha > 1 || star.alpha < 0.2) star.blinkSpeed = -star.blinkSpeed;
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(star.alpha)})`;
+                ctx.fillRect(star.x * w, star.y * h, star.size, star.size);
+            });
+
+            const moonX = w * 0.8;
+            const moonY = h * 0.2;
+            ctx.fillStyle = '#fef08a';
+            ctx.beginPath();
+            ctx.arc(moonX, moonY, 20, 0, Math.PI * 2);
+            ctx.fill();
+
+            const castleX = w * 0.45;
+            const castleBaseY = h * 0.6;
+            ctx.fillStyle = '#0f172a';
+
+            drawPixelRect(castleX - 30, castleBaseY - 40, 70, 40, '#020617');
+            drawPixelRect(castleX - 35, castleBaseY - 70, 20, 70, '#020617');
+            drawPixelRect(castleX + 15, castleBaseY - 95, 22, 95, '#090d16');
+            ctx.beginPath();
+            ctx.moveTo(castleX + 15, castleBaseY - 95);
+            ctx.lineTo(castleX + 26, castleBaseY - 115);
+            ctx.lineTo(castleX + 37, castleBaseY - 95);
+            ctx.closePath();
+            ctx.fillStyle = '#020617';
+            ctx.fill();
+
+            const windowX = castleX + 22;
+            const windowY = castleBaseY - 75;
+            drawPixelRect(windowX, windowY, 8, 12, '#fef08a');
+            drawPixelRect(windowX + 2, windowY + 2, 4, 4, '#f472b6');
+            if (Math.floor(time * 3) % 2 === 0) {
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(windowX + 2, windowY - 6, 4, 4);
+            }
+
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.moveTo(0, h);
+            ctx.lineTo(0, h * 0.65);
+            ctx.lineTo(w * 0.35, h * 0.58);
+            ctx.lineTo(w * 0.7, h * 0.62);
+            ctx.lineTo(w, h * 0.7);
+            ctx.lineTo(w, h);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            const heroSpacing = Math.min(65, (w - 40) / 5);
+            const startX = (w - (heroSpacing * 4)) / 2 - 10;
+            const mouseBaseY = h * 0.60;
+
+            HEROES.forEach((hero, idx) => {
+                const posX = startX + (idx * heroSpacing);
+                const isSelected = (idx === activeHeroIndex);
+                drawPixelMouse(posX, mouseBaseY, hero, isSelected, time);
+            });
+
+            animFrameId = requestAnimationFrame(renderScene);
+        }
+
+        function renderHeroSelectorGrid() {
+            const grid = document.getElementById('heroSelectorGrid');
+            grid.innerHTML = '';
+
+            HEROES.forEach((hero, idx) => {
+                const card = document.createElement('div');
+                card.className = `hero-card pixel-box p-2 text-center flex flex-col items-center justify-between ${idx === activeHeroIndex ? 'selected' : ''}`;
+                card.onclick = () => selectHero(idx);
+
+                card.innerHTML = `
+                    <div class="w-full text-[9px] sm:text-[10px] truncate text-slate-300 font-bold mb-1">${hero.name.split(',')[0]}</div>
+                    <div class="w-8 h-8 rounded border-2 border-slate-700 flex items-center justify-center my-1" style="background-color: ${hero.color}22;">
+                        <span class="text-xs font-bold" style="color: ${hero.color};">${idx + 1}</span>
+                    </div>
+                    <div class="text-[9px] text-amber-400 font-bold">HP ${hero.hp}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function selectHero(index) {
+            activeHeroIndex = index;
+            renderHeroSelectorGrid();
+            renderHeroDetails();
+        }
+
+        function renderHeroDetails() {
+            const hero = HEROES[activeHeroIndex];
+            const panel = document.getElementById('heroDetailPanel');
+
+            panel.innerHTML = `
+                <div class="flex flex-col items-center gap-2 w-full md:w-32 bg-slate-950/70 p-3 rounded border border-indigo-900/60">
+                    <div class="w-16 h-16 rounded-full border-4 flex items-center justify-center shadow-inner" style="border-color: ${hero.color}; background-color: ${hero.color}33">
+                        <span class="text-2xl">🐭</span>
+                    </div>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded text-slate-900 uppercase" style="background-color: ${hero.color}">
+                        ${hero.spriteType}
+                    </span>
+                </div>
+
+                <div class="flex-1 w-full">
+                    <div class="flex flex-wrap items-center justify-between border-b border-amber-500/40 pb-2 mb-2">
+                        <div>
+                            <h3 class="text-sm sm:text-base font-bold text-amber-300">${hero.name}</h3>
+                            <p class="text-[11px] text-slate-400 font-vt323 text-lg">${hero.title}</p>
+                        </div>
+                        <div class="flex items-center gap-2 bg-slate-900 px-3 py-1 border border-slate-700 rounded">
+                            <span class="text-xs text-rose-400 font-bold">❤️ HP: ${hero.hp}/${hero.maxHp}</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 mb-3 text-center">
+                        <div class="bg-slate-900/80 p-1.5 border border-slate-700 rounded">
+                            <div class="text-[9px] text-slate-400">FORÇA</div>
+                            <div class="text-sm font-bold text-amber-400 font-vt323 text-xl">${hero.str}</div>
+                        </div>
+                        <div class="bg-slate-900/80 p-1.5 border border-slate-700 rounded">
+                            <div class="text-[9px] text-slate-400">AGILIDADE</div>
+                            <div class="text-sm font-bold text-emerald-400 font-vt323 text-xl">${hero.agi}</div>
+                        </div>
+                        <div class="bg-slate-900/80 p-1.5 border border-slate-700 rounded">
+                            <div class="text-[9px] text-slate-400">VONTADE</div>
+                            <div class="text-sm font-bold text-indigo-400 font-vt323 text-xl">${hero.wil}</div>
+                        </div>
+                    </div>
+
+                    <div class="text-[11px] font-vt323 text-lg space-y-1 text-slate-300 bg-slate-950/40 p-2 rounded border border-slate-800">
+                        <div>⚔️ <strong>Arma:</strong> ${hero.weapon}</div>
+                        <div>🛡️ <strong>Proteção:</strong> ${hero.armor}</div>
+                        <div>🎒 <strong>Item Principal:</strong> ${hero.item}</div>
+                    </div>
+
+                    <p class="mt-2 text-xs font-vt323 text-lg text-slate-400 leading-snug">
+                        ${hero.desc}
+                    </p>
+                </div>
+            `;
+        }
+
+        let battleAnimId;
+
+        function startDungeonEncounter() {
+            const modal = document.getElementById('dungeonModal');
+            const hero = HEROES[activeHeroIndex];
+
+            document.getElementById('modalTitle').innerText = `EXPLORANDO COM ${hero.name.toUpperCase()}`;
+            document.getElementById('modalDescription').innerText = 
+                `${hero.name} avança na frente carregando ${hero.weapon}! A porta da masmorra se abre com um rangido ecoante...`;
+
+            modal.classList.remove('hidden');
+            initBattleCanvas();
+        }
+
+        function closeDungeonModal() {
+            document.getElementById('dungeonModal').classList.add('hidden');
+            if (battleAnimId) cancelAnimationFrame(battleAnimId);
+        }
+
+        function initBattleCanvas() {
+            const bCanvas = document.getElementById('battleCanvas');
+            const bCtx = bCanvas.getContext('2d');
+            bCanvas.width = bCanvas.parentElement.clientWidth;
+            bCanvas.height = bCanvas.parentElement.clientHeight;
+
+            let mousePosX = 30;
+            let monsterPosX = bCanvas.width - 60;
+            let step = 0;
+
+            function drawBattleFrame() {
+                step += 0.05;
+                bCtx.fillStyle = '#020617';
+                bCtx.fillRect(0, 0, bCanvas.width, bCanvas.height);
+
+                bCtx.strokeStyle = '#1e293b';
+                bCtx.lineWidth = 1;
+                for (let x = 0; x < bCanvas.width; x += 20) {
+                    bCtx.beginPath(); bCtx.moveTo(x, 0); bCtx.lineTo(x, bCanvas.height); bCtx.stroke();
+                }
+
+                const hero = HEROES[activeHeroIndex];
+                const mouseY = bCanvas.height / 2 - 10 + Math.sin(step * 4) * 4;
+
+                bCtx.fillStyle = hero.color;
+                bCtx.fillRect(mousePosX, mouseY, 24, 24);
+                bCtx.fillStyle = '#ffffff';
+                bCtx.fillRect(mousePosX + 18, mouseY + 4, 4, 4);
+
+                const monsterY = bCanvas.height / 2 - 20 + Math.cos(step * 3) * 5;
+                bCtx.fillStyle = '#dc2626';
+                bCtx.fillRect(monsterPosX, monsterY, 36, 36);
+                bCtx.fillStyle = '#fef08a';
+                bCtx.fillRect(monsterPosX + 6, monsterY + 8, 6, 6);
+                bCtx.fillRect(monsterPosX + 22, monsterY + 8, 6, 6);
+
+                if (Math.floor(step) % 2 === 0) {
+                    bCtx.fillStyle = '#fbbf24';
+                    bCtx.fillRect((mousePosX + monsterPosX) / 2, bCanvas.height / 2, 12, 4);
+                }
+
+                battleAnimId = requestAnimationFrame(drawBattleFrame);
+            }
+
+            drawBattleFrame();
+        }
+
+        window.onload = function() {
+            resizeCanvas();
+            renderHeroSelectorGrid();
+            renderHeroDetails();
+            requestAnimationFrame(renderScene);
+
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key >= '1' && e.key <= '5') {
+                    selectHero(parseInt(e.key) - 1);
+                }
+            });
+        };
+    </script>
 </body>
 </html>
